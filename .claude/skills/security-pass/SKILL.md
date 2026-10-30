@@ -10,12 +10,12 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion, Ente
 Mejorar la seguridad de un proyecto con evidencia del camino explotable y cambios
 acotados. Leer dos referencias del toolkit antes de empezar:
 
-- `$HOME/webapps/vps-ops-toolkit/workflows/improvement/IMPROVEMENT_STANDARDS.md`:
+- `$OPS_ROOT/workflows/improvement/IMPROVEMENT_STANDARDS.md`:
   modos, worktree, registro, regla de beneficio, contexto delegado y el «Protocolo de
   validación de candidatos» (tres veredictos, verificador independiente —`quick`, y
   `standard` automática para `mandatory` y `bloqueante`—, crítico de cobertura y
   ledger de cobertura).
-- `$HOME/webapps/vps-ops-toolkit/workflows/improvement/SECURITY_REFERENCE.md`:
+- `$OPS_ROOT/workflows/improvement/SECURITY_REFERENCE.md`:
   lo específico de seguridad —dónde mirar en nuestro stack, huella del candidato,
   prompt del explorador, catálogo de clases `S-*` con la evidencia que cuenta en cada
   una, lista del verificador, severidad, cobertura y reporte—.

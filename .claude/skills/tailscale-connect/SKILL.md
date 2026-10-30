@@ -67,8 +67,8 @@ onboarding completo bimodal, usá [[bootstrap-tailscale-fleet]] / [[init-fleet]]
 
 ### Phase 0 — Identificar host + preflight (read-only)
 
-1. `hostname -s` → mapear a alias: `srv571894`→vps-projectapp-staging,
-   `srv1681495`→vps-projectapp-prod, `srv614758`→vps-gym. Dev machine si
+1. `hostname -s` → mapear a alias con `$FLEET_HOST_ALIASES` (pares
+   `hostname=alias` separados por coma, p. ej. `srv571894=vps-projectapp-staging`). Dev machine si
    `is_dev_machine` (helper de `scripts/lib/bootstrap-common.sh`).
 2. Decidir el flag de conexión: **dev** → `tailscale up --ssh`; **VPS** →
    `tailscale up --ssh --hostname=$(hostname -s)`.
@@ -165,7 +165,7 @@ después.
    caído:
    ```bash
    PEER="<peer online ≠ self>"
-   OUT="$(timeout 60 tailscale ssh "ryzepeck@$PEER" true 2>&1)"; RC=$?
+   OUT="$(timeout 60 tailscale ssh "$FLEET_SSH_USER@$PEER" true 2>&1)"; RC=$?
    ```
 3. Clasificar por el CONTENIDO, no sólo por el `rc` (mismo patrón que
    `propagate-toolkit-commit.sh`, que ya lo hace bien):

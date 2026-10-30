@@ -59,7 +59,7 @@ cualquier alcance) y el modo de una invocación encadenada.
 ## Reglas
 
 - El catálogo sigue al código, nunca al revés.
-- `--apply` escribe sólo en un worktree de sesión (`~/webapps/.wt/…`); nunca
+- `--apply` escribe sólo en un worktree de sesión (`$FLEET_PROJECTS_ROOT/.wt/…`); nunca
   commitea ni pushea.
 - La estructura (Fase 2) y los pins globales (Fase 4) valen en todo alcance; el
   alcance acota la semántica (Fase 3). Los ecos en docs (Fase 5) corren en
@@ -97,25 +97,25 @@ Falta un archivo → `⏭️` (sin mapa) o `🔴` si se renombró. En un worktre
 sesión, consultar su registro:
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
 ```
 
 En una auditoría `--check` desde el clon principal, resolver la base mediante
 el proyecto canónico del registry (p. ej. `<proyecto>`):
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <proyecto>
+bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <proyecto>
 ```
 
 Usar `base=` del worktree, o `resolved_branch=` del resolver para la auditoría;
 una coordenada ambigua sin resolución detiene la comparación. `status` fuera
 de un worktree retorna `2`: no significa que el mapa esté ausente.
-`--apply` fuera de `~/webapps/.wt/` → crear el
+`--apply` fuera de `$FLEET_PROJECTS_ROOT/.wt/` → crear el
 worktree y entrar antes de escribir:
 
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh create chore view-map-refresh
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh create chore view-map-refresh
 ```
 
 ## Fase 1 — Alcance

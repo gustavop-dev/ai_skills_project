@@ -218,7 +218,7 @@ typed only).
 ## Engine
 
 The deterministic parts live in
-`$HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh`. Call it; do not
+`$OPS_ROOT/scripts/qa/qa-agent.sh`. Call it; do not
 reimplement it.
 
 - `qa-agent.sh --preflight <proj>` → scope: layers, db engine, staging/production,
@@ -242,7 +242,7 @@ reimplement it.
   tests por su cuenta. `--run-id` sólo aplica a `--check`/`--verify`.
 - `--report-dir=<dir>` escribe el reporte en ese directorio y `--no-report` no escribe
   ninguno (sólo stdout); son excluyentes. Con el motor de integridad presente, un
-  destino dentro del clon fijado `~/webapps/vps-ops-toolkit` se rechaza (exit 2) y el
+  destino dentro del clon fijado `$OPS_ROOT` se rechaza (exit 2) y el
   default pasa a `${XDG_STATE_HOME:-~/.local/state}/vps-ops-toolkit/qa-reports`.
 
 ## Roles — dedicated subagents (dispatch by `subagent_type`)
@@ -314,7 +314,7 @@ Run `basename "$(git rev-parse --show-toplevel)"`:
 6. **deploy-and-check is a suggestion.** Never auto-run it; name it in Next steps.
 7. **Clean tree before --apply.** Refuse to author on a dirty tree, so the QA
    commit is revertible on its own.
-8. **Session worktree.** `--apply` writes ONLY inside `~/webapps/.wt/<repo>/<slug>`
+8. **Session worktree.** `--apply` writes ONLY inside `$FLEET_PROJECTS_ROOT/.wt/<repo>/<slug>`
    for the PROJECT being QA'd. Create it BEFORE any write under `--apply` — right
    after Phase 0's preflight, since Phase 1 (methodology-setup / flow-map) already
    writes — via `session-worktree.sh create qa <slug>` (or tmpl §5), and enter it
@@ -325,7 +325,7 @@ Run `basename "$(git rev-parse --show-toplevel)"`:
 
 ## Phase 0 — Preflight & abstain
 
-`bash $HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --preflight <proj>`.
+`bash $OPS_ROOT/scripts/qa/qa-agent.sh --preflight <proj>`.
 Read the scope. **Abstain `⏭️` in seconds** when `abstain=yes` (no test infra) or
 nothing changed since the branch base. A false auto-invocation must cost a fast
 no-op, never a write.
@@ -575,12 +575,12 @@ per-batch operator approval (test-audit's own guardrail). Dry-run unless `--appl
 
 - Step 0: ensure the session worktree (normally already entered in Phase 0
   under `--apply`, rail 8) — author and commit ONLY inside
-  `~/webapps/.wt/<repo>/<slug>`, never in the main clone. Inside a native worktree
+  `$FLEET_PROJECTS_ROOT/.wt/<repo>/<slug>`, never in the main clone. Inside a native worktree
   Claude refuses any command carrying `$(...)`, `{a,b}`, a `for`/`while` or a
   heredoc with substitution, plus `git -C <main clone>` / `cd <main clone>` — the
   whole block dies. So: **one plain command per call**, and take branch/base/PR
   number from a single
-  `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status`,
+  `bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status`,
   writing them **literal** in the next call (convention: `git-branch-protocol` §1).
 - Under `--apply`: commit the authored tests (Conventional Commits, English).
   `resolved_branch` is always the **BASE** of the work, never where the commit
@@ -718,7 +718,7 @@ Reportar siguiendo $output-protocol. Plantilla específica de `$qa`
 | Frente QA (sólo en ronda de mejora) | ℹ️ | confirmed N · needs_validation N · rejected N · capas no examinadas con razón · estado del frente: MADURO / NO VALE LA PENA / VALE LA PENA / BLOQUEADO / FALTA EVIDENCIA |
 
 ## Next steps
-- `bash $HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --verify <proj> --files=<spec>` — reconfirmar el gate
+- `bash $OPS_ROOT/scripts/qa/qa-agent.sh --verify <proj> --files=<spec>` — reconfirmar el gate
 - (operador) `dev-up` + re-`$qa --apply` para VALIDAR los e2e en draft
 - `$perf-pass <proj> --candidate=<id> --record-qa` — sólo si la corrida consumió un puntero `PERF pending`: registra el veredicto medido en el ledger de rendimiento
 - (operador) `$merge-queue` — QA nunca mergea

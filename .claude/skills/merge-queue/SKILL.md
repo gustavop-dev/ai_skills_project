@@ -1,6 +1,6 @@
 ---
 name: merge-queue
-description: "Usar cuando VARIAS ramas/PRs pendientes (trabajo de N sesiones paralelas) deben integrarse en orden: 'mergeá todo lo pendiente', 'drená las ramas', 'cerrá el trabajo de todas las sesiones', 'merge queue/train'. Censa el trabajo pendiente (PRs de sesión con dueño en el body + ramas sin PR + local-only + gone + ya-en-base), arma la estrategia en dos niveles (tier 1: sesiones→release o →default; tier 2: release→default sólo con release_merge y tier 1 drenado) y ejecuta: batch de verdes disjuntos server-side + TREN DE INTEGRACIÓN (rama temporal queue/integration-* que valida la COMBINACIÓN con UN solo run de CI — verde ⇒ merges de corrido sin re-CI por unidad; rojo ⇒ bisect). NO espera ni vigila el CI de la base: la confianza está en el verde de cada sesión + el run del tren. Al cerrar avisa a cada sesión dueña que su trabajo ya aterrizó y le pide su propio visto bueno con `/all-in-base --check-only` (fire-and-forget, no espera respuesta). Conflictos semánticos y fix loop se DELEGAN a la sesión dueña vía SendMessage (señal de resuelto = push al head; timeout ⇒ inline). En cada pausa y al final emite el Tablero de estado. NO usar para una sola rama ([[merge-when-green]]), ni para commits sueltos ([[git-commit]]), ni para sync sin merge ([[git-sync]]), ni en cron/headless. Nunca rebasea ramas pusheadas (force push denegado); nunca toca el checkout del clon principal: toda mutación de tree ocurre en el worktree propio de la queue (~/webapps/.wt/<repo>/queue-*)."
+description: "Usar cuando VARIAS ramas/PRs pendientes (trabajo de N sesiones paralelas) deben integrarse en orden: 'mergeá todo lo pendiente', 'drená las ramas', 'cerrá el trabajo de todas las sesiones', 'merge queue/train'. Censa el trabajo pendiente (PRs de sesión con dueño en el body + ramas sin PR + local-only + gone + ya-en-base), arma la estrategia en dos niveles (tier 1: sesiones→release o →default; tier 2: release→default sólo con release_merge y tier 1 drenado) y ejecuta: batch de verdes disjuntos server-side + TREN DE INTEGRACIÓN (rama temporal queue/integration-* que valida la COMBINACIÓN con UN solo run de CI — verde ⇒ merges de corrido sin re-CI por unidad; rojo ⇒ bisect). NO espera ni vigila el CI de la base: la confianza está en el verde de cada sesión + el run del tren. Al cerrar avisa a cada sesión dueña que su trabajo ya aterrizó y le pide su propio visto bueno con `/all-in-base --check-only` (fire-and-forget, no espera respuesta). Conflictos semánticos y fix loop se DELEGAN a la sesión dueña vía SendMessage (señal de resuelto = push al head; timeout ⇒ inline). En cada pausa y al final emite el Tablero de estado. NO usar para una sola rama ([[merge-when-green]]), ni para commits sueltos ([[git-commit]]), ni para sync sin merge ([[git-sync]]), ni en cron/headless. Nunca rebasea ramas pusheadas (force push denegado); nunca toca el checkout del clon principal: toda mutación de tree ocurre en el worktree propio de la queue ($FLEET_PROJECTS_ROOT/.wt/<repo>/queue-*)."
 allowed-tools: Bash, AskUserQuestion, ListAgents, SendMessage, TaskStop
 argument-hint: "[--all-repos] [--plan-only] [--batch-only] [--include-no-pr=r1,r2] [--autonomous] [--max-iterations=N]"
 ---
@@ -58,8 +58,8 @@ argument-hint: "[--all-repos] [--plan-only] [--batch-only] [--include-no-pr=r1,r
 > desaparecen del historial final.
 >
 > **El clon principal es intocable:** esta skill jamás hace checkout en
-> `~/webapps/<repo>` (en VPS es el tree del servicio corriendo). Toda mutación
-> de working tree ocurre en su worktree propio `~/webapps/.wt/<repo>/queue-<ts>`.
+> `$FLEET_PROJECTS_ROOT/<repo>` (en VPS es el tree del servicio corriendo). Toda mutación
+> de working tree ocurre en su worktree propio `$FLEET_PROJECTS_ROOT/.wt/<repo>/queue-<ts>`.
 > El alta/retiro de ese worktree sí escribe su ref `queue/*` y registro exacto
 > en el gitdir compartido; ese alcance `gitmeta` está inventariado como
 > `session-worktree` y no se disfraza como escritura exclusiva bajo `.wt/`.
@@ -172,7 +172,7 @@ Con `--all-repos`, resolvé la lista de repos (el toolkit NO entra como unidad d
 cola — sólo aparece en Phase 6):
 
 ```bash
-OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
+OPS_ROOT="${OPS_ROOT:-${FLEET_PROJECTS_ROOT:-$HOME/webapps}/vps-ops-toolkit}"
 source "$OPS_ROOT/scripts/lib/bootstrap-common.sh"
 PROJECT_DEFS_QUIET=1 source "$OPS_ROOT/scripts/lib/project-definitions.sh"
 echo "🔧 Colas a censar — ${#LOCAL_PROJECTS[@]} repos de proyecto:"
@@ -194,7 +194,7 @@ vos (Claude) en contexto con las clases de abajo.
 
 ```bash
 # Re-anclaje: en modo default, el repo del cwd; en --all-repos, cd al repo de la
-# iteración bajo ~/webapps/<repo>.
+# iteración bajo $FLEET_PROJECTS_ROOT/<repo>.
 cd "$(git rev-parse --show-toplevel)"
 REPO_NAME="$(basename "$PWD")"
 QDIR="/tmp/merge-queue-${REPO_NAME}"
@@ -213,7 +213,7 @@ echo "--- tree (sucio = posible sesión activa sin terminar) ---"
 git status --porcelain | head -5
 
 echo "--- coordenada (guards heredados) ---"
-bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh" \
+bash "$OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh" \
      --check "$REPO_NAME" 2>/dev/null || true
 
 echo "--- PRs abiertos (enumeración propia: el resolver NO lista PRs feature en prod-directos) ---"
@@ -224,7 +224,7 @@ gh pr list --state open \
    --json number,headRefName,baseRefName,createdAt,isDraft,mergeable,mergeStateStatus,statusCheckRollup,body \
    -q '.[] | {number,headRefName,baseRefName,createdAt,isDraft,mergeable,mergeStateStatus, checks: ([.statusCheckRollup[]?.conclusion] | join(",")), sesion: ((.body // "" | capture("Sesi[oó]n:\\s*(?<s>[^\\n]+)") .s) // "—")}'
 # La RELEASE del repo (si participa): base de integración del tier 1.
-RELEASE="$(bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh" \
+RELEASE="$(bash "$OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh" \
    --check "$REPO_NAME" 2>/dev/null | awk -F= '$1=="pr_state"{ps=$2} $1=="resolved_branch"{rb=$2} END{if(ps=="single") print rb}')"
 echo "RELEASE (tier-1 base si participa): ${RELEASE:-n/a — prod-directo o sin release}"
 echo "--- merges recientes (señal doble-orquestador: <10 min ⇒ ⚠️) ---"
@@ -304,7 +304,7 @@ git worktree list --porcelain | sed -n 's/^worktree //p'
 | `rama-actual-sucia` | `CURRENT` con tree sucio | advisory "posible sesión activa" — excluida de auto-ejecución, jamás se ofrece |
 
 `host_status=wrong-host` ⇒ el **repo entero** se salta (⏭️ con el
-`tailscale ssh ryzepeck@<vps_work>` de destino), igual que merge-when-green.
+`tailscale ssh $FLEET_SSH_USER@<vps_work>` de destino), igual que merge-when-green.
 
 ## Phase 2 — Estrategia + tabla del plan + LA única pregunta
 
@@ -458,7 +458,7 @@ cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
 REPO_NAME="$(basename "$PWD")"; touch "/tmp/merge-queue-${REPO_NAME}/lock"
 BASE_T="<base del tier>"          # release (tier 1 participante) o default
 TS="$(date +%d%m%Y-%H%M)"
-WT="$HOME/webapps/.wt/${REPO_NAME}/queue-${TS}"
+WT="$FLEET_PROJECTS_ROOT/.wt/${REPO_NAME}/queue-${TS}"
 BASE_LINE="$(GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code --refs origin "refs/heads/$BASE_T")"
 BASE_SHA="${BASE_LINE%%[[:space:]]*}"
 echo "$BASE_SHA" | grep -Eq '^[0-9a-fA-F]{40,64}$' || { echo "base remota ilegible"; exit 2; }
@@ -584,7 +584,7 @@ resto se drena con 5.3.
 cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
 git push origin --delete "queue/integration-<ts>" 2>/dev/null || true
 gh pr close <nº del draft de integración, si se usó> 2>/dev/null || true
-git worktree remove --force "$HOME/webapps/.wt/$(basename "$PWD")/queue-<ts>" 2>/dev/null || true
+git worktree remove --force "$FLEET_PROJECTS_ROOT/.wt/$(basename "$PWD")/queue-<ts>" 2>/dev/null || true
 ```
 
 La rama de integración **jamás se mergea** — es el banco de pruebas de la
@@ -638,7 +638,7 @@ cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
 REPO_NAME="$(basename "$PWD")"
 # El clon principal es el árbol desplegado: esta fase sólo compara su HEAD con
 # el SHA anunciado para branch: y deriva cualquier avance al deploy tipado.
-DEPLOY="$(bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh" \
+DEPLOY="$(bash "$OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh" \
    --check "$REPO_NAME" 2>/dev/null | sed -n 's/^deploy_branch=//p')"
 CUR="$(git rev-parse --abbrev-ref HEAD)"
 DEPLOY_LINE="$(GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code --refs origin "refs/heads/$DEPLOY" 2>/dev/null || true)"
@@ -651,7 +651,7 @@ if echo "$DEPLOY_SHA" | grep -Eq '^[0-9a-fA-F]{40,64}$'; then
     else
         PENDING="$(git rev-list --count "HEAD..$DEPLOY_SHA" 2>/dev/null || echo '?')"
         echo "⚠️ clon desplegado intacto: deploy pendiente ($PENDING commit(s))"
-        echo "   ejecutar manualmente: cd $PWD && bash $HOME/webapps/vps-ops-toolkit/scripts/deployment/deploy-project.sh --apply --project=$REPO_NAME $DEPLOY"
+        echo "   ejecutar manualmente: cd $PWD && bash $OPS_ROOT/scripts/deployment/deploy-project.sh --apply --project=$REPO_NAME $DEPLOY"
     fi
 else
     echo "⚠️ clon desplegado intacto: deploy_branch/tip irresoluble ($CUR) — se reporta"
@@ -674,7 +674,7 @@ deployados. Antes del tablero final, pedile su línea al motor `vps-integrity`.
 frenan un merge ni degradan una fila ya mergeada.
 
 ```bash
-if [ -f "$HOME/webapps/vps-ops-toolkit/scripts/integrity/fleet-integrity-status.sh" ]; then bash "$HOME/webapps/vps-ops-toolkit/scripts/integrity/fleet-integrity-status.sh"; elif [ -x /usr/local/sbin/vps-integrity ]; then sudo -n /usr/local/sbin/vps-integrity status --line; else echo "ℹ️ vps-integrity no instalado — sin eco de integridad"; fi
+if [ -f "$OPS_ROOT/scripts/integrity/fleet-integrity-status.sh" ]; then bash "$OPS_ROOT/scripts/integrity/fleet-integrity-status.sh"; elif [ -x /usr/local/sbin/vps-integrity ]; then sudo -n /usr/local/sbin/vps-integrity status --line; else echo "ℹ️ vps-integrity no instalado — sin eco de integridad"; fi
 ```
 
 La vista de fleet resuelve sola local vs `tailscale ssh`; su **exit 75** es la
@@ -686,7 +686,7 @@ Los **worktrees de sesión** cuyo PR quedó mergeado se reportan como **retirabl
 los retira la **sesión dueña** con `/all-in-base` al ver su PR ya mergeado
 (`session-worktree.sh remove <slug>`, sin `--force`); los **huérfanos** los junta el
 gc del operador
-(`bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" gc --apply`).
+(`bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" gc --apply`).
 La queue sólo retira los `queue-*` propios.
 
 **Cierre asíncrono** — regla completa en [[merge-when-green]] § «Cierre
@@ -811,8 +811,8 @@ vuelo, watcher del CI combinado, bisect) · en Phase 6 como reporte final.
   sólo sería aceptable en una rama local-only jamás pusheada — y aun ahí el
   merge es más simple y igual de válido con squash.
 - **El clon principal jamás se toca**: ni checkout, ni pull, ni merge, ni stash
-  en `~/webapps/<repo>` — toda mutación de tree ocurre en el worktree
-  `~/webapps/.wt/<repo>/queue-<ts>` de la corrida. Phase 6 sólo sondea el SHA y
+  en `$FLEET_PROJECTS_ROOT/<repo>` — toda mutación de tree ocurre en el worktree
+  `$FLEET_PROJECTS_ROOT/.wt/<repo>/queue-<ts>` de la corrida. Phase 6 sólo sondea el SHA y
   deriva un avance pendiente a `deploy-project.sh` (manual, operación tipada).
 - **La rama `queue/integration-*` jamás se mergea** — banco de pruebas de la
   combinación; se borra en 5.5 (remota + worktree). Sus restos huérfanos de

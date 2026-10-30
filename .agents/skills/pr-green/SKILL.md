@@ -5,7 +5,7 @@ description: "Cierre de sesión en un repo de PROYECTO del fleet: deja el PR de 
 
 > **⚠️ How to invoke**:
 > - Sin argumento: `$pr-green` → opera sobre el **worktree de sesión del cwd**
->   (`~/webapps/.wt/<repo>/<slug>`) y sobre SU rama. No toma nombres de repo ni de
+>   (`$FLEET_PROJECTS_ROOT/.wt/<repo>/<slug>`) y sobre SU rama. No toma nombres de repo ni de
 >   rama: una sesión entrega lo suyo, parada donde trabajó.
 > - **Esta skill NO tiene fase de merge**, y no es un olvido: existe para que la
 >   sesión frene donde debe. El DoD de una sesión es *árbol limpio + rama pusheada +
@@ -63,13 +63,13 @@ son tuning simétrico al default y se tipean.
 | cualquier otro | **ERROR**: argumento desconocido |
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
 ```
 
 - **rc 2** → no hay registro que emitir: estás en el clon principal, fuera de un repo
   git, o en `vps-ops-toolkit` (flujo trunk, sin PR → `$git-commit`). Mostrá la razón
   que imprimió y **abortá** con la receta de alta —
-  `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh create <prefijo> <slug>`,
+  `bash $OPS_ROOT/scripts/maintenance/session-worktree.sh create <prefijo> <slug>`,
   después Claude: `EnterWorktree path=<el worktree= que imprimió>` · Codex:
   `cd <worktree=>` — y re-invocá desde ahí.
 - **rc 0** → el registro trae TODO lo que usan las fases siguientes: `repo` `branch`
@@ -90,8 +90,8 @@ hay flag que los saltee:
 1. **`host_status=wrong-host`** → ⏭️ el trabajo de este repo vive en otro VPS:
    **terminá** sin tocar nada. El nombre del VPS correcto (`vps_work=`) sale de un
    comando simple más, con el `project` del registro:
-   `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <project literal>`
-   → reportá `tailscale ssh ryzepeck@<vps_work>`.
+   `bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <project literal>`
+   → reportá `tailscale ssh $FLEET_SSH_USER@<vps_work>`.
 2. **Rama BASE** — `branch` igual a `default_branch`, `resolved_branch`,
    `registered_branch`, `deploy_branch` o `base`. Son ramas compartidas, jamás de una
    sesión: ❌ acá no se commitea, no se pushea y no se entrega nada. Cortá tu rama
@@ -131,7 +131,7 @@ commiteó y pusheó lo pendiente — y por eso el registro se **relee** (el de P
 anterior a tu commit):
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
 ```
 
 `in_base` sale del mismo par de capas que usaba el bloque viejo (`rev-list --count`
@@ -309,7 +309,7 @@ vuelo o se pasó --no-wait · ⏭️ si el trabajo ya estaba en la base)
 
 | Dimensión | Estado | Detalle |
 |---|---|---|
-| Worktree | ✅ | ~/webapps/.wt/<repo>/<slug> · rama <rama> · base <base> |
+| Worktree | ✅ | $FLEET_PROJECTS_ROOT/.wt/<repo>/<slug> · rama <rama> · base <base> |
 | Commit | ✅ | <sha> — <mensaje> (⏭️ si no había nada que commitear) |
 | Push | ✅ | <rama> → origin |
 | PR | ✅ | #<n> — <url> (base: <base>) |

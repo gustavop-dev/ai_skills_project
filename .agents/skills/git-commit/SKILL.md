@@ -12,7 +12,7 @@ description: "Inspect git changes, generate a professional commit message with F
 > - Con `--all-repos`: `$git-commit --all-repos` → itera sobre `LOCAL_PROJECTS`
 >   del host + `vps-ops-toolkit`. **Commitea el toolkit y los scaffolds `base_*`**
 >   (los tres van directo a `master`); de los **clones principales de proyecto sólo
->   REPORTA** el `dirty` — el trabajo de sesión vive en `~/webapps/.wt/` y lo
+>   REPORTA** el `dirty` — el trabajo de sesión vive en `$FLEET_PROJECTS_ROOT/.wt/` y lo
 >   entrega su propia sesión con `$pr-green`. En los repos commiteables: si está
 >   clean, SKIP; si tiene cambios, generar mensaje propio y commit+push
 >   independiente. **Convención del
@@ -29,7 +29,7 @@ description: "Inspect git changes, generate a professional commit message with F
 >   normal, no una falla (ver Phase 2).
 >
 > **Dónde aterriza el commit (repos de proyecto del fleet):** SIEMPRE en el
-> **worktree de sesión** (`~/webapps/.wt/<repo>/<slug>`), sobre TU rama, y el
+> **worktree de sesión** (`$FLEET_PROJECTS_ROOT/.wt/<repo>/<slug>`), sobre TU rama, y el
 > **primer push abre el PR** (git-branch-protocol §9 — `Sesión:`/`Intención:` en el
 > body). En el **clon principal** de un repo de proyecto esta skill **se niega** en
 > cualquier rama: es el checkout del servicio/deploy y el hook `PreToolUse` lo
@@ -96,7 +96,7 @@ basename, nunca leyendo el texto de un mensaje de error:
 git rev-parse --show-toplevel
 ```
 
-- Basename **`vps-ops-toolkit`** (o el toplevel cae bajo `~/webapps/vps-ops-toolkit`)
+- Basename **`vps-ops-toolkit`** (o el toplevel cae bajo `$OPS_ROOT`)
   → **flujo trunk**: commit directo a `master`, sin PR, con la propagación de Phase 2.
   **No corras `status`**: el toolkit no usa worktrees de sesión. Saltá al flujo de
   abajo.
@@ -105,7 +105,7 @@ git rev-parse --show-toplevel
 - Cualquier otro repo → es un repo de proyecto del fleet; resolvé el tree:
 
   ```bash
-  bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+  bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
   ```
 
   - **rc 0** → estás en TU worktree de sesión. El guard del clon principal ya está
@@ -113,7 +113,7 @@ git rev-parse --show-toplevel
     `pr_state` `pr_url` `host_status`; se escriben **literales** más abajo.
     `host_status=wrong-host` ⇒ ⏭️ el trabajo vive en otro VPS: terminá y reportá el
     `vps_work=` de
-    `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <project literal>`.
+    `bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <project literal>`.
   - **rc 2** → estás en el **clon principal** de ese repo (o el cwd no es un repo git,
     y entonces ❌ abortá: lanzá Claude Code desde el repo a commitear, o usá
     `--all-repos`). ❌ guard — misma regla que el hook `PreToolUse`, función
@@ -124,7 +124,7 @@ git rev-parse --show-toplevel
 
     ```
     ❌ Clon principal de <repo>: acá no se commitea (git-branch-protocol §1).
-       bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh create <prefijo> <slug>
+       bash $OPS_ROOT/scripts/maintenance/session-worktree.sh create <prefijo> <slug>
        Claude: EnterWorktree path=<worktree=>  ·  Codex: cd <worktree=>   → re-invocá desde ahí.
     ```
 
@@ -137,13 +137,13 @@ que aplique. **Nunca entra a un worktree con `cd`**: los repos se tocan con `git
 
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
-OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
+OPS_ROOT="${OPS_ROOT:-${FLEET_PROJECTS_ROOT:-$HOME/webapps}/vps-ops-toolkit}"
 source "$OPS_ROOT/scripts/lib/bootstrap-common.sh"
 PROJECT_DEFS_QUIET=1 source "$OPS_ROOT/scripts/lib/project-definitions.sh"
 REPOS=("${LOCAL_PROJECTS[@]}" "vps-ops-toolkit")
 VALID_REPOS=()
 for r in "${REPOS[@]}"; do
-    if [ -d "$HOME/webapps/$r/.git" ]; then
+    if [ -d "$FLEET_PROJECTS_ROOT/$r/.git" ]; then
         VALID_REPOS+=("$r")
     else
         echo "⏭️  $r — dir no existe o no es repo git (skip)"
@@ -158,7 +158,7 @@ aborta, salta el repo):
 
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
-REPO_DIR="$HOME/webapps/$REPO"
+REPO_DIR="$FLEET_PROJECTS_ROOT/$REPO"
 echo "═══ 🎯 Repo objetivo: $REPO_DIR ($(git -C "$REPO_DIR" branch --show-current)) ═══"
 MAIN="$(dirname "$(git -C "$REPO_DIR" rev-parse --path-format=absolute --git-common-dir)")"
 ROOT="$(realpath -m "${FLEET_PROJECTS_ROOT:-$HOME/webapps}")"
@@ -281,7 +281,7 @@ se revierte por una falla de propagación.
 1. **Guard obligatorio** — confirmar que el repo commiteado ES el toolkit antes
    de propagar (en modo default el cwd puede ser un proyecto). Dos comandos simples,
    no un `if` con sustitución: el primero te dice dónde estás, el segundo sólo corre
-   si el toplevel ES `~/webapps/vps-ops-toolkit`:
+   si el toplevel ES `$OPS_ROOT`:
    ```bash
    git rev-parse --show-toplevel
    ```
@@ -291,7 +291,7 @@ se revierte por una falla de propagación.
    Copiá ese SHA completo como literal en el comando siguiente (sin
    sustitución de shell):
    ```bash
-   bash ~/webapps/vps-ops-toolkit/scripts/maintenance/propagate-toolkit-commit.sh --apply --target=<sha-completo>
+   bash $OPS_ROOT/scripts/maintenance/propagate-toolkit-commit.sh --apply --target=<sha-completo>
    ```
    Si el toplevel es otro repo: `⏭️ Repo no-toolkit (<repo>) — sin propagación al
    fleet.` y **no corras** los comandos de SHA/propagación.

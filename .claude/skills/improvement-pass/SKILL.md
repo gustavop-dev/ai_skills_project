@@ -10,7 +10,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, SendMessage, AskUserQ
 Sos el ORQUESTADOR de una ronda de mejora de UN proyecto: creás subagentes, repartís
 el trabajo, resolvés conflictos e integrás; no implementás ningún frente. La política y
 el motor son canónicos:
-`$HOME/webapps/vps-ops-toolkit/workflows/improvement/IMPROVEMENT_STANDARDS.md` (el
+`$OPS_ROOT/workflows/improvement/IMPROVEMENT_STANDARDS.md` (el
 contrato) y `scripts/improvement/improvement-ledger.sh`. No reimplementar selección,
 huellas de contexto, validación ni persistencia.
 
@@ -69,11 +69,11 @@ desde el clon principal (sólo lectura):
 
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <proyecto>
+bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <proyecto>
 ```
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
-bash ~/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --preflight <proyecto>
+bash $OPS_ROOT/scripts/qa/qa-agent.sh --preflight <proyecto>
 ```
 
 `host_status=wrong-host`, coordenada ambigua o falta de permiso real bloquean la
@@ -96,7 +96,7 @@ frente en español (`seguridad`, `mantenibilidad`, `observabilidad`, `rendimient
 
   ```bash
   # pre-entry: corre en el clon principal, antes de EnterWorktree
-  bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh create improve imp<ddmm>r<n>-compartido
+  bash $OPS_ROOT/scripts/maintenance/session-worktree.sh create improve imp<ddmm>r<n>-compartido
   ```
 - `--check`, `--refresh` y `--review3` sin `--apply`: sin worktree; el clon principal
   se lee sin ejecutar nada, se declara su `HEAD` contra `origin/<BASE>` y los
@@ -133,7 +133,7 @@ Antes de despachar, el orquestador corre en `compartido` (con el toolkit fijado,
 sin worktree, corre sobre el clon principal con `--no-report` en lugar de `--projdir`:
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --check <proyecto> --projdir=<worktree compartido literal> --run-id=<ronda>-qa
+bash $OPS_ROOT/scripts/qa/qa-agent.sh --check <proyecto> --projdir=<worktree compartido literal> --run-id=<ronda>-qa
 ```
 
 ## 1. Diagnóstico — un subagente por frente, sólo lectura
@@ -223,7 +223,7 @@ cobertura permite marcar `complete: true` (en `--check`, con `--check`). Selecci
 **por frente**, hasta tres (una ronda del motor por rama):
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/improvement/improvement-ledger.sh --select <proyecto> --projdir=<árbol literal> --fronts=<front>
+bash $OPS_ROOT/scripts/improvement/improvement-ledger.sh --select <proyecto> --projdir=<árbol literal> --fronts=<front>
 ```
 
 Revisar cada propuesta con escepticismo: el orquestador puede rechazar, con la razón
@@ -236,7 +236,7 @@ registrar la ronda (§6), salir con `ExitWorktree` y retirar `compartido` si no 
 commits; sin ramas ni PRs. `--check` y `--refresh` terminan acá siempre.
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh remove imp<ddmm>r<n>-compartido
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh remove imp<ddmm>r<n>-compartido
 ```
 
 Cerrar los subagentes de los frentes que no quedaron VALE LA PENA. Después:
@@ -253,7 +253,7 @@ Cerrar los subagentes de los frentes que no quedaron VALE LA PENA. Después:
 - **Un worktree por frente aprobado**, creado desde `compartido` con un comando simple:
 
   ```bash
-  bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh create improve imp<ddmm>r<n>-<frente>
+  bash $OPS_ROOT/scripts/maintenance/session-worktree.sh create improve imp<ddmm>r<n>-<frente>
   ```
 
   Si el slug ya existe, ese frente se detiene y se reporta: nunca se reutiliza un

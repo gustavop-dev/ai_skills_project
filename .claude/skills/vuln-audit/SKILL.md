@@ -116,7 +116,7 @@ Replicar de forma automática el flujo manual de auditoría que vive en `audit-r
 
 ## Constraints (no negociables)
 - **Default read-only.** Sin `--apply`/`--upgrade`, la skill NO modifica nada: ni `package.json`/`package-lock.json`, ni `requirements.txt`, ni `audit-report.md`, ni commits, ni ramas. Solo snapshots a `/tmp` y el plan en la respuesta.
-- **Branching (solo modos mutantes):** sigue el protocolo por sesión: worktree propio bajo `~/webapps/.wt/<repo>/` — slug `vuln-audit` para `--apply` (rama `chore/<DDMMYYYY>-vuln-audit`) y slug `deps-upgrade` para `--upgrade` (rama `chore/<DDMMYYYY>-deps-upgrade`) — cortado de la BASE que resuelve la coordenada (`resolved_branch` si hay release activa vía `pr_state=single`; si no, la default del repo — **nunca** la default a secas ignorando la coordenada) vía `session-worktree.sh create chore <slug>`; nunca checkout de ramas ajenas ni rama nueva en el clon principal. Si la sesión YA tiene su worktree/rama de un turno anterior, se reutiliza. Detalle operativo en la Fase 0.
+- **Branching (solo modos mutantes):** sigue el protocolo por sesión: worktree propio bajo `$FLEET_PROJECTS_ROOT/.wt/<repo>/` — slug `vuln-audit` para `--apply` (rama `chore/<DDMMYYYY>-vuln-audit`) y slug `deps-upgrade` para `--upgrade` (rama `chore/<DDMMYYYY>-deps-upgrade`) — cortado de la BASE que resuelve la coordenada (`resolved_branch` si hay release activa vía `pr_state=single`; si no, la default del repo — **nunca** la default a secas ignorando la coordenada) vía `session-worktree.sh create chore <slug>`; nunca checkout de ramas ajenas ni rama nueva en el clon principal. Si la sesión YA tiene su worktree/rama de un turno anterior, se reutiliza. Detalle operativo en la Fase 0.
 - **Push + PR al primer push** (tmpl §9, con `Sesión:`/`Intención:` en el body); la skill PARA con el PR abierto — el merge es del operador/`/merge-queue`, nunca de esta skill. En `--apply` el push va al final; en `--upgrade`, con el primer commit.
 - **Working tree debe estar limpio** antes de aplicar (`git status` sin cambios). Si no lo está, abortar el modo mutante; la auditoría read-only puede correr igual (no toca el tree).
 - **Alcance por modo.** `--apply`: **solo patch + minor** dentro del major actual. `--upgrade`: los majors entran **únicamente como unidad propia** (un paquete o grupo lockstep por commit), jamás dentro de un batch. En ambos modos `0.x → 0.y` (y `0.x → 1.x`) **es major**, y **Django cuenta cada *feature release* como major** (`6.0 → 6.1`, `6.1 → 6.2`: cambian el soporte de bases de datos y quitan APIs aunque no cambie el primer número; sólo `X.Y.Z → X.Y.W` es patch) — `--apply` la salta, `--upgrade` la trata como unidad framework con el gate de la base de producción. **Nunca** `npm audit fix --force`.
@@ -174,13 +174,13 @@ commit.
 ## Detección de entorno (Fase 0)
 0. Parsear `$ARGUMENTS`: superficie (vacío/`backend`/`frontend`), `APPLY=true` si trae `--apply`, `UPGRADE=true` si trae `--upgrade`; los dos juntos ⇒ abortar. "Modos mutantes" = `--apply` y `--upgrade`. Sin ninguno la corrida es **solo auditoría**: los pasos marcados "(solo modos mutantes)" / "(solo `--apply`)" / "(solo `--upgrade`)" en todas las fases se saltan según corresponda.
 1. (solo modos mutantes) Guard de worktree (protocolo por sesión): `git rev-parse
-   --show-toplevel` debe caer bajo `~/webapps/.wt/`. Si cae en el clon principal,
+   --show-toplevel` debe caer bajo `$FLEET_PROJECTS_ROOT/.wt/`. Si cae en el clon principal,
    creá tu worktree de sesión ANTES de seguir — nunca busques una rama feature
    activa para hacerle checkout, ni crees una rama nueva en el clon principal. El
    slug depende del modo: `vuln-audit` para `--apply`, `deps-upgrade` para `--upgrade`:
    ```bash
    # pre-entry: corre en el clon principal, antes de EnterWorktree
-   OUT="$(bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" \
+   OUT="$(bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" \
           create chore vuln-audit)"       # --upgrade: create chore deps-upgrade
    echo "$OUT"   # PREFERIDO: imprime worktree=/branch=/base=/pr_base= — la BASE que
                  # resuelve es la de la coordenada (release activa o default), nunca
@@ -188,12 +188,12 @@ commit.
    WT="$(sed -n 's/^worktree=//p' <<<"$OUT")"
    ```
    Entrá al worktree (Claude: `EnterWorktree path=$WT`; Codex: `cd "$WT"`) y confirmá
-   `git rev-parse --show-toplevel` bajo `~/webapps/.wt/` antes de seguir. Si la sesión
+   `git rev-parse --show-toplevel` bajo `$FLEET_PROJECTS_ROOT/.wt/` antes de seguir. Si la sesión
    YA tiene su worktree/rama de un turno anterior, reutilizalo — no crees uno nuevo.
    **`--upgrade` con un worktree `deps-upgrade` preexistente:** leé
    `session-worktree.sh status` desde adentro; `pr_state=OPEN|none` ⇒ es un resume
    (ver `## Idempotencia`); `pr_state=MERGED|CLOSED` ⇒ retiralo primero desde el clon
-   principal (`bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh remove deps-upgrade`)
+   principal (`bash $OPS_ROOT/scripts/maintenance/session-worktree.sh remove deps-upgrade`)
    y creá uno nuevo.
    No hay fallback manual con `git fetch` + `git worktree add`: omitir el helper
    eludiría tanto la coordenada release-aware como el inventario `gitmeta` de la
@@ -247,7 +247,7 @@ commit.
 8. Leer `CLAUDE.md` y `AGENTS.md` raíz si existen, y además `grep -n "#" backend/requirements.txt`
    (los comentarios inline son constraints, p.ej. «Production uses MySQL 8.0.x; Django 6.1
    requires MySQL 8.4+» ⇒ Django `<6.1`), el `node_version:` del proyecto en
-   `~/webapps/vps-ops-toolkit/projects.yml` (el de producción = `<node>` literal para todo
+   `$OPS_ROOT/projects.yml` (el de producción = `<node>` literal para todo
    install/build; si falta, el `node-version` del workflow) y `python-version`/`node-version`
    de `.github/workflows/ci.yml`, para detectar:
    - Pin policies adicionales (ej. "cryptography pinned <44.0").
@@ -823,7 +823,7 @@ Se ejecuta siempre que hubo `--apply` (incluso si una fase no produjo updates: e
    `ambiguous` en el próximo `resolve-work-coordinate.sh` — receta canónica, la misma
    de [[pr-green]] Phase 2 / tmpl §0:
    ```bash
-   bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+   bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
    ```
    De ahí salen `branch` y `base` (ese `base` YA es el de la coordenada: la release
    activa cuando la hay, la default sólo si no la hay). Se escriben **literales** —
@@ -1004,7 +1004,7 @@ no superar 15 filas):
 | Dimensión | Estado | Detalle |
 |---|---|---|
 | Preflight | ✅ | CI presente (último run <T>), base verde, sin PR de deps, node <node> |
-| Worktree / venv aislado | ✅ | ~/webapps/.wt/<repo>/deps-upgrade · backend/.venv propio · sin DB |
+| Worktree / venv aislado | ✅ | $FLEET_PROJECTS_ROOT/.wt/<repo>/deps-upgrade · backend/.venv propio · sin DB |
 | Frontend lockfile / patch / minor | ✅ | 1 + 12 + 7 pkgs · runs <ids> ✅ |
 | Frontend majors | ⚠️ | 4 ✅ · 1 diferido (react 19: tests de auth ⇒ fuera de alcance) |
 | Backend patch / minor | ✅ / ⏭️ | 4 pkgs ✅ · minor: unidad vacía |

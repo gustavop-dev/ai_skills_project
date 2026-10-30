@@ -245,7 +245,7 @@ Inmediatamente después fija el HEAD completo. Si el target está
 el comando exacto, password-bound y nunca `sudo -n`:
 
 ```bash
-tailscale ssh ryzepeck@<target>
+tailscale ssh $FLEET_SSH_USER@<target>
 sudo /usr/local/sbin/vps-integrity initial-authorize <proyecto> \
   --type migrate --target-commit <FULL_SHA> --ttl 15m
 ```
@@ -482,7 +482,7 @@ Si el proyecto tiene un staging twin en el mismo VPS (caso `kore_project` + `kor
 
 Si origin tiene `backend/db.sqlite3` además de MySQL (caso típico de proyectos legados), la skill emite warn pero NO copia automáticamente. Casos:
 - Si es runtime de silk → ignorar (silk lo regenera en target)
-- Si tiene state real → copiar manual: `scp <origin>:/home/ryzepeck/webapps/<proj>/backend/db.sqlite3 <target>:/home/ryzepeck/webapps/<proj>/backend/`
+- Si tiene state real → copiar manual: `scp <origin>:$FLEET_PROJECTS_ROOT/<proj>/backend/db.sqlite3 <target>:$FLEET_PROJECTS_ROOT/<proj>/backend/`
 
 ### Redis DB slot conflict
 

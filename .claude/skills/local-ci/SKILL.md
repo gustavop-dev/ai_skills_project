@@ -35,8 +35,8 @@ de una regresión puntual al inventario total solicitado.
 
 ## 2. Preparar recursos y aislamiento
 
-Motor compartido: `~/webapps/vps-ops-toolkit/scripts/ci/local_ci.py`.
-Lee `~/webapps/vps-ops-toolkit/docs/local-ci.md` antes de generar el plan del motor.
+Motor compartido: `$OPS_ROOT/scripts/ci/local_ci.py`.
+Lee `$OPS_ROOT/docs/local-ci.md` antes de generar el plan del motor.
 Los helpers son versionados; si el toolkit falta, informa la dependencia y usa
 su fuente autorizada para instalarlo, sin inventar un ejecutor distinto por sesión.
 

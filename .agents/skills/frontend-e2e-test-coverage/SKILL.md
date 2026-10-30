@@ -242,7 +242,7 @@ abstention **is not a failure**. Fabricating a test to close the number is.
 7. Validate:
 
    ```bash
-   bash $HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --verify <proyecto> --files=<archivo1,archivo2>
+   bash $OPS_ROOT/scripts/qa/qa-agent.sh --verify <proyecto> --files=<archivo1,archivo2>
    # equivalente crudo (fallback): python3 scripts/test_quality_gate.py --repo-root . \
    #   --suite frontend-e2e --semantic-rules strict --junk-severity=error --include-file <archivo>
    ```
@@ -258,7 +258,7 @@ Tras el reporte, si la sesión es interactiva y NO hubo flags explícitos
 | Opción (label) | description (costo/efecto) | preview (comando exacto) |
 |---|---|---|
 | Re-auditar cobertura de flows | confirma que los flows tocados pasaron a covered/partial | `python3 scripts/flow_coverage_audit.py --repo-root .` |
-| Re-correr el gate sobre el lote | valida los specs tocados contra las reglas anti-basura | `bash $HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --verify <proyecto> --files=<a,b>` |
+| Re-correr el gate sobre el lote | valida los specs tocados contra las reglas anti-basura | `bash $OPS_ROOT/scripts/qa/qa-agent.sh --verify <proyecto> --files=<a,b>` |
 | Pasar a escritura | implementar los specs que el análisis dejó descritos | `$frontend-e2e-test-coverage --apply` |
 
 Nunca ofrecer como fila clickeable `--write-junk-baseline` (el baseline sólo se

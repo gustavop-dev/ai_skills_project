@@ -54,7 +54,7 @@ a rendimiento se devuelven al conductor para deduplicar, sin escribir otro ledge
 invocar `perf-pass`. Git, registros y el cierre de QA de cada rama son del conductor.
 
 El helper común
-`bash ~/webapps/vps-ops-toolkit/scripts/improvement/improvement-ledger.sh --show <proyecto> --projdir=<worktree>`
+`bash $OPS_ROOT/scripts/improvement/improvement-ledger.sh --show <proyecto> --projdir=<worktree>`
 preserva las referencias al ledger responsive. Su `--record-qa` exige ronda, SHA exacto
 y manifest de ejecuciones de $qa, incluida validación E2E en vivo cuando corresponde;
 el último reporte por fecha o una captura nunca valida esta ronda. No ejecutar QA inline
@@ -154,16 +154,16 @@ orden, nunca un multiSelect de módulos). `--record-qa` se tipea: es un modo pos
 ## Fase 0 — Preflight (una llamada; los valores viajan en el contexto, nunca se re-ejecuta)
 
 `<proyecto>` es el argumento de la skill; si no vino, sale del `project=` de
-`bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status` (o del
+`bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status` (o del
 nombre del clon). Va **literal** en las dos llamadas — post-`EnterWorktree` Claude
 rechaza `$(...)` y se caería el bloque entero (convención: `git-branch-protocol` §1):
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --preflight <proyecto>
+bash $OPS_ROOT/scripts/qa/qa-agent.sh --preflight <proyecto>
 #   → projdir · registry · production · staging · layers · app_reachable · resolved_branch · host_status · pr_state
 ```
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/responsive/responsive-ledger.sh --show <proyecto> --module=<module-id>
+bash $OPS_ROOT/scripts/responsive/responsive-ledger.sh --show <proyecto> --module=<module-id>
 #   → codebase · ledger · standard (ok|stale|absent|no-canonical) · standard_version · lineage ·
 #     responsive_cfg · widths · breakpoints · project_doc · viewport_helper · module_source ·
 #     modules=[id:status,…] · next_suggested · ledger_orphans ·
@@ -267,7 +267,7 @@ no, el canónico del toolkit), `project_doc` si existe, y las claves `responsive
 - **Peso o carga** (imágenes sin `loading=lazy`/tamaño, tabla que renderiza todas las filas,
   fetch duplicado entre componentes, import pesado en el layout) es `observación` de
   rendimiento, no de responsividad: además de listarse en el reporte se anota en el ledger de
-  $perf-pass con `bash ~/webapps/vps-ops-toolkit/scripts/perf/perf-ledger.sh --note <proyecto>`
+  $perf-pass con `bash $OPS_ROOT/scripts/perf/perf-ledger.sh --note <proyecto>`
   (categoría `frontend/…`, `seen_by: signal:responsive-pass`, evidencia `file:line`), para que
   entre al `top3` de la próxima pasada de rendimiento.
 
@@ -356,11 +356,11 @@ reutiliza:
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
 SLUG="<module-slug>"      # admin/accounting → admin-accounting
-OUT="$(bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" \
+OUT="$(bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" \
        create fix "responsive-$SLUG")"
 echo "$OUT"               # imprime worktree=/branch=/base=/pr_base=
 WT="$(sed -n 's/^worktree=//p' <<<"$OUT")"
-cd "$WT" && git rev-parse --show-toplevel   # debe caer bajo ~/webapps/.wt/
+cd "$WT" && git rev-parse --show-toplevel   # debe caer bajo $FLEET_PROJECTS_ROOT/.wt/
 ```
 
 Claude Code: `EnterWorktree path=$WT` con el path literal impreso (aprobación la
@@ -462,7 +462,7 @@ validan en el siguiente `$qa --apply` — estado previsto por `$qa`, no un error
 ## Fase 6 — Registro + reporte (en cualquier modo; registrar no es escribir en el proyecto)
 
 **En un host con el motor de integridad** (`[ -x /usr/local/sbin/vps-integrity ]`), el clon
-`~/webapps/vps-ops-toolkit` está fijado a la generación instalada: esta corrida no escribe ni
+`$OPS_ROOT` está fijado a la generación instalada: esta corrida no escribe ni
 commitea nada en él. El reporte va a
 `~/.local/state/vps-ops-toolkit/responsive-reports/<YYYY-MM-DD>-<proyecto>-responsive-<module-slug>.md`,
 fuera de todo clon, con el fragmento de `--record` del punto 2 y la línea de `watchlist` de la
@@ -487,7 +487,7 @@ lectura, verifica el sha antes de registrar y lo registra con su fragmento.
 2. **Ledger** (schema y reglas: `config/responsive-ledger/README.md`):
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/responsive/responsive-ledger.sh --record <proyecto> <<'EOF'
+bash $OPS_ROOT/scripts/responsive/responsive-ledger.sh --record <proyecto> <<'EOF'
 module: <id>
 status: <diagnosed|applied|qa-pending|blocked|deferred-low-value> # pending sin estándar
 report: docs/audits/<YYYY-MM-DD>-<proyecto>-responsive-<slug>.md
@@ -509,7 +509,7 @@ open_findings:
 observations:
   - "Header desborda en compact → módulo layout"
 EOF
-git -C ~/webapps/vps-ops-toolkit add config/responsive-ledger/<codebase>.yml docs/audits/<reporte>.md
+git -C $OPS_ROOT add config/responsive-ledger/<codebase>.yml docs/audits/<reporte>.md
 ```
 
 **Si la Fase 5c escribió el watchlist** (`config/qa-memory/<codebase>.yml`), entra en el
@@ -518,10 +518,10 @@ Una llamada más (`git -C <toolkit>` está permitido desde un worktree de proyec
 OTRO repo, no el clon compartido de este worktree):
 
 ```bash
-git -C ~/webapps/vps-ops-toolkit add config/qa-memory/<codebase>.yml
+git -C $OPS_ROOT add config/qa-memory/<codebase>.yml
 ```
 ```bash
-git -C ~/webapps/vps-ops-toolkit commit -m "docs(responsive): record <proyecto> <module> <status>"
+git -C $OPS_ROOT commit -m "docs(responsive): record <proyecto> <module> <status>"
 ```
 
 Commit propio en master del toolkit, nunca mezclado con el commit del proyecto; el push sigue
@@ -535,7 +535,7 @@ En un host con el motor de integridad no corre: el veredicto se registra despué
 (Fase 6).
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/responsive/responsive-ledger.sh --record-qa <proyecto> --module=<id>
+bash $OPS_ROOT/scripts/responsive/responsive-ledger.sh --record-qa <proyecto> --module=<id>
 #   mide: flow_coverage_audit.py --json sobre flows_declared + último docs/audits/<fecha>-<proyecto>-qa.md
 #   posterior a la corrida → qa: {status, verdict, live_validation, flows, rejected_because}
 ```
@@ -639,7 +639,7 @@ sobre ESTA corrida; el de $qa es una fila aparte):
 
 ## Next steps
 - `$qa <proyecto> --apply --layers=e2e` — guion en `docs/audits/<reporte>`; PR de QA apilado sobre `fix/…-responsive-<slug>`
-- (operador, dev) `cd ~/webapps/.wt/<repo>/responsive-<slug>/frontend && npm ci && npm run dev` — app con el fix para la validación en vivo de $qa
+- (operador, dev) `cd $FLEET_PROJECTS_ROOT/.wt/<repo>/responsive-<slug>/frontend && npm ci && npm run dev` — app con el fix para la validación en vivo de $qa
 - `$responsive-pass <proyecto> --module=<id> --record-qa` — tras $qa: registra el veredicto medido en el ledger
 - `$perf-pass <proyecto> --top3` — sólo si la corrida anotó observaciones de peso/carga en el ledger de rendimiento
 - `$responsive-pass <proyecto> --module=<next_suggested>` — siguiente módulo

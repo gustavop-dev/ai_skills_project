@@ -48,7 +48,7 @@ value assessment and does not establish that a front is exhausted.
    may die after you. Under `IMPROVEMENT_CONTEXT`, skip this command and return the
    same structured note with `persisted: no(delegated-coordinator)` instead:
    ```bash
-   bash $HOME/webapps/vps-ops-toolkit/scripts/perf/perf-ledger.sh --note <project> <<'EOF'
+   bash $OPS_ROOT/scripts/perf/perf-ledger.sh --note <project> <<'EOF'
    category: backend/queries
    module: <module>
    process: "<endpoint / task / route — the process, as the operator would name it>"

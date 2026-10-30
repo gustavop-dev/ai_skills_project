@@ -93,20 +93,20 @@ repo (o tu worktree). No hay loop real: las Phases 1-7 corren una vez.
 
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
-OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
+OPS_ROOT="${OPS_ROOT:-${FLEET_PROJECTS_ROOT:-$HOME/webapps}/vps-ops-toolkit}"
 source "$OPS_ROOT/scripts/lib/bootstrap-common.sh"
 PROJECT_DEFS_QUIET=1 source "$OPS_ROOT/scripts/lib/project-definitions.sh"
 REPOS=("${LOCAL_PROJECTS[@]}" "vps-ops-toolkit")   # con --all-vps solo: sólo el toolkit
 VALID_REPOS=()
 for r in "${REPOS[@]}"; do
-    if [ -d "$HOME/webapps/$r/.git" ]; then VALID_REPOS+=("$r"); else echo "⏭️  $r — skip"; fi
+    if [ -d "$FLEET_PROJECTS_ROOT/$r/.git" ]; then VALID_REPOS+=("$r"); else echo "⏭️  $r — skip"; fi
 done
 echo "🔧 repos a procesar: ${#VALID_REPOS[@]}"
 printf '   - %s\n' "${VALID_REPOS[@]}"
 ```
 
 Las Phases 1-7 corren **una vez por repo** de `VALID_REPOS`, con `git -C
-"$HOME/webapps/$REPO"` en cada comando — **nunca** con `cd` a un worktree ajeno.
+"$FLEET_PROJECTS_ROOT/$REPO"` en cada comando — **nunca** con `cd` a un worktree ajeno.
 
 **Política de errores**: si una iteración termina en conflicto, error de fetch o de
 rebase, reportá el error con el comando exacto para resolverlo
@@ -122,7 +122,7 @@ Antes de tocar nada, clasificá el tree de ESTE repo. Se aplica **por repo**, ta
 dentro de `--all-repos`.
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
 ```
 
 - **rc 0** → **worktree de sesión**. Flujo normal (Phases 0.3 → 7) sobre TU rama; es
@@ -132,7 +132,7 @@ bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
   recalcules**.
   `host_status=wrong-host` ⇒ ⏭️ terminá para ese repo; el VPS correcto (`vps_work=`)
   sale de
-  `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <project literal>`.
+  `bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <project literal>`.
 - **rc 2** → no hay worktree: estás en un clon principal (o fuera de un repo git).
   Identificá cuál y en qué rama:
 
@@ -152,7 +152,7 @@ bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
       Reportá el conteo y **terminá para ese repo** (sin fetch destructivo, sin stash,
       sin rebase, sin checkout).
     - limpio y en la rama de deploy (el `deploy_branch=` del resolver:
-      `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <repo>`)
+      `bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <repo>`)
       → consultar `refs/heads/<deploy_branch>` con `ls-remote`; si el objeto
       falta, traer sólo su SHA con `--no-auto-gc --no-tags
       --no-write-fetch-head`; reportar `deploy pendiente` y delegar a
@@ -195,7 +195,7 @@ bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
   reemplazando ambos placeholders por sus valores literales:
 
   ```text
-  bash $HOME/webapps/vps-ops-toolkit/scripts/deployment/deploy-project.sh --apply --project=<repo literal> <deploy_branch literal>
+  bash $OPS_ROOT/scripts/deployment/deploy-project.sh --apply --project=<repo literal> <deploy_branch literal>
   ```
 
 En los casos de clon principal **guardado**, esta skill **no corre** las Phases 0.5-6
@@ -211,7 +211,7 @@ gh auth status
 ```
 
 Falla ⇒ **ERROR** y salida: `gh` es dependencia obligatoria para la detección de PRs.
-Sin la CLI: `sudo bash ~/webapps/vps-ops-toolkit/scripts/bootstrap/install-github-cli.sh --apply`.
+Sin la CLI: `sudo bash $OPS_ROOT/scripts/bootstrap/install-github-cli.sh --apply`.
 Sin auth: `gh auth login` (GitHub.com → HTTPS → Login with web browser).
 
 ```bash
@@ -598,10 +598,10 @@ El flag de repos es literal: `--repos=toolkit` sin `--all-repos`, `--repos=all` 
 él. Un comando por llamada (dry-run primero):
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/propagate-toolkit-commit.sh --check --repos=toolkit
+bash $OPS_ROOT/scripts/maintenance/propagate-toolkit-commit.sh --check --repos=toolkit
 ```
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/propagate-toolkit-commit.sh --apply --repos=toolkit
+bash $OPS_ROOT/scripts/maintenance/propagate-toolkit-commit.sh --apply --repos=toolkit
 ```
 
 **Sentinel `exit 75` = pausa de auth de Tailscale**, NO es un fallo: el script

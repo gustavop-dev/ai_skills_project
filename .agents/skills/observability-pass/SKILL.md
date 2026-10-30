@@ -7,7 +7,7 @@ description: "Pasada de observabilidad y tolerancia a fallos de UN proyecto: log
 
 Poder detectar y explicar un fallo real, y limitar sus efectos cuando una
 dependencia externa, retry o carrera interviene. Leer
-`$HOME/webapps/vps-ops-toolkit/workflows/improvement/IMPROVEMENT_STANDARDS.md`,
+`$OPS_ROOT/workflows/improvement/IMPROVEMENT_STANDARDS.md`,
 con su «Protocolo de validación de candidatos».
 
 ## Cómo invocar este skill

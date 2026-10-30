@@ -42,7 +42,7 @@ Si la solicitud encaja en cualquiera de estos, ejecutar el flujo de pre-flight c
 
 ```bash
 # Cargar helpers del fleet (idéntico al patrón que usan server-alerts.sh, backup-mysql-and-media.sh)
-OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
+OPS_ROOT="${OPS_ROOT:-${FLEET_PROJECTS_ROOT:-$HOME/webapps}/vps-ops-toolkit}"
 MODE=check
 source "${OPS_ROOT}/scripts/lib/bootstrap-common.sh"
 source "${OPS_ROOT}/scripts/lib/project-definitions.sh"
@@ -286,7 +286,7 @@ Mover los archivos relevantes **antes** del `rm -rf` a una ruta explícita que e
 PROJ=azurita
 # Paso A: detecta env=staging, DOMAIN=azurita.projectapp.co, DB=sqlite
 # Paso B: count de modelos clave; si OK seguir, si vacío correr create_fake_data
-# Paso C: reusar ~/webapps/azurita/.playwright_staging/sessions/admin.json
+# Paso C: reusar $FLEET_PROJECTS_ROOT/azurita/.playwright_staging/sessions/admin.json
 # Paso D: URL=https://azurita.projectapp.co
 # Paso E: ARTIFACTS_DIR=/tmp/playwright-mcp-azurita/<RUN_ID>
 ```
@@ -344,7 +344,7 @@ Flujo:
 
 1. Bootstrap sub-agentes:
    ```bash
-   cd ~/webapps/candle_staging_project
+   cd $FLEET_PROJECTS_ROOT/candle_staging_project
    [ ! -d .github/chatmodes ] && npx playwright init-agents --loop=claude
    ```
 2. Crear/actualizar `frontend/e2e/seed.spec.ts` con `storageState: '<ruta a cliente.json>'`.
@@ -389,7 +389,7 @@ la app no corría durante el authoring), esta skill es el paso que los valida:
 2. Reportar pass/fail por spec.
 3. En verde, indicar al operador re-correr:
    ```bash
-   bash $HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --verify <proj> --files=<specs>
+   bash $OPS_ROOT/scripts/qa/qa-agent.sh --verify <proj> --files=<specs>
    ```
    (limpia el marker `.qa-gate-pending`).
 

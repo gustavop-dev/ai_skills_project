@@ -12,11 +12,11 @@ servicios systemd; ahí usá `$deploy-and-check`, no esta skill.
 **Verificación obligatoria ANTES de cualquier otro paso**:
 
 ```bash
-# Gate genérico: refusa si detecta producción (usuario ryzepeck del VPS) o si el
+# Gate genérico: refusa si detecta producción (usuario $FLEET_SSH_USER del VPS) o si el
 # proyecto ya corre como servicio systemd en esta máquina.
 PROJECT_NAME=$(basename "$(pwd)")
 GUN_SVC_GUESS="${PROJECT_NAME%_staging}"
-if [[ -d /home/ryzepeck/webapps ]] \
+if [[ -d "${FLEET_VPS_ROOT:-/home/${FLEET_SSH_USER:-ryzepeck}/webapps}" ]] \
    || systemctl is-active --quiet "$GUN_SVC_GUESS.service" 2>/dev/null \
    || systemctl is-active --quiet "$PROJECT_NAME.service" 2>/dev/null; then
   echo "❌ Esto parece un VPS / entorno de producción."
@@ -39,7 +39,7 @@ bootstrap completo del entorno. Pensada para un checkout limpio donde todavía n
 hay venv, `node_modules` ni base de datos.
 
 - **Stack dev**: Django 5 + DRF (SQLite, settings `*_dev`) + frontend dev server (si aplica)
-- **Genérica**: auto-descubre metadata del proyecto desde `~/webapps/vps-ops-toolkit/projects.yml` (con defaults si no está registrado).
+- **Genérica**: auto-descubre metadata del proyecto desde `$OPS_ROOT/projects.yml` (con defaults si no está registrado).
 - **Idempotente**: cada fase detecta si ya está hecho y saltea. Re-invocarla es seguro.
 - **Logs**: `/tmp/<proyecto>-dev/{backend,frontend}.log` (+ `.pid`). Cero footprint en el repo.
 
@@ -82,7 +82,7 @@ set -o pipefail
 ARGS="$ARGUMENTS"
 PROJECT_DIR=$(pwd)
 PROJECT_NAME=$(basename "$PROJECT_DIR")
-OPS_YML="$HOME/webapps/vps-ops-toolkit/projects.yml"
+OPS_YML="$OPS_ROOT/projects.yml"
 LOG_DIR="/tmp/$PROJECT_NAME-dev"
 mkdir -p "$LOG_DIR"
 

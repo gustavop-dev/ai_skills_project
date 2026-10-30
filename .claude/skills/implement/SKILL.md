@@ -19,11 +19,11 @@ Sin picker por diseño: no hay flags de modo — el argumento es la feature o el
 
 ## Paso 0 — Worktree de sesión (obligatorio antes de escribir, en CUALQUIER repo)
 
-`git rev-parse --show-toplevel` debe caer bajo `~/webapps/.wt/`; si cae en el
+`git rev-parse --show-toplevel` debe caer bajo `$FLEET_PROJECTS_ROOT/.wt/`; si cae en el
 clon principal, creá tu worktree ANTES de tocar nada — `bash
-$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh create
+$OPS_ROOT/scripts/maintenance/session-worktree.sh create
 <prefijo> <slug>` (o la receta manual del tmpl §5) — y entrá: Claude Code
-`EnterWorktree path=~/webapps/.wt/<repo>/<slug>`, Codex `cd`. Si la sesión YA
+`EnterWorktree path=$FLEET_PROJECTS_ROOT/.wt/<repo>/<slug>`, Codex `cd`. Si la sesión YA
 tiene su worktree de un turno anterior, seguí usándolo. Esto NO depende de si
 el repo está en `projects.yml`: el guard del hook es por path del clon, no por
 registro.
@@ -31,10 +31,10 @@ registro.
 ## Preflight (obligatorio)
 
 Si el repo actual es un proyecto del fleet (aparece en
-`~/webapps/vps-ops-toolkit/projects.yml`), ANTES de escribir:
+`$OPS_ROOT/projects.yml`), ANTES de escribir:
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <proyecto>
+bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <proyecto>
 ```
 
 Si ya estás DENTRO de tu worktree (Claude, tras `EnterWorktree`), el mismo dato —más
@@ -45,7 +45,7 @@ proyecto solo. Adentro de un worktree nativo Claude rechaza el comando con `$(..
 siguiente (convención: `git-branch-protocol` §1 del CLAUDE.md del repo).
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
 ```
 
 - `resolved_branch` es la **BASE** del trabajo, no la rama donde se commitea:

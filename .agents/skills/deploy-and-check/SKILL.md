@@ -33,14 +33,14 @@ opt-outs de verificación o un modo de vista previa. Ningún flag amplía alcanc
 Desde la raíz del clon desplegado:
 
 ```bash
-bash "$HOME/webapps/vps-ops-toolkit/scripts/deployment/deploy-project.sh" \
+bash "$OPS_ROOT/scripts/deployment/deploy-project.sh" \
   --apply $ARGUMENTS
 ```
 
 Vista previa read-only (no abre operación, no toma dump, no construye nada):
 
 ```bash
-bash "$HOME/webapps/vps-ops-toolkit/scripts/deployment/deploy-project.sh" --check
+bash "$OPS_ROOT/scripts/deployment/deploy-project.sh" --check
 ```
 
 Sin argumento despliega `branch:` de `projects.yml`. Un argumento de rama sólo
@@ -194,15 +194,15 @@ Reintentos explícitos sobre el mismo comando:
 ```bash
 # Continuar una operación propia interrumpida (crash, corte de sesión)
 INTEGRITY_OPERATION_RECOVERY=resume \
-  bash "$HOME/webapps/vps-ops-toolkit/scripts/deployment/deploy-project.sh" --apply $ARGUMENTS
+  bash "$OPS_ROOT/scripts/deployment/deploy-project.sh" --apply $ARGUMENTS
 
 # Completar el cierre de la misma operación; el ledger autentica el modo permitido
 INTEGRITY_OPERATION_RECOVERY=finish-close \
-  bash "$HOME/webapps/vps-ops-toolkit/scripts/deployment/deploy-project.sh" --apply $ARGUMENTS
+  bash "$OPS_ROOT/scripts/deployment/deploy-project.sh" --apply $ARGUMENTS
 
 # Abortar: con ledger en commit = rollback completo; si no, abort terminal sin firmar
 INTEGRITY_OPERATION_RECOVERY=abort \
-  bash "$HOME/webapps/vps-ops-toolkit/scripts/deployment/deploy-project.sh" --apply $ARGUMENTS
+  bash "$OPS_ROOT/scripts/deployment/deploy-project.sh" --apply $ARGUMENTS
 ```
 
 `finish-close` y `abort` terminan esa invocación y piden ejecutar de nuevo sin

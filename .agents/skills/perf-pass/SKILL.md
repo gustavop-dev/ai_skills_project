@@ -61,7 +61,7 @@ ejecutar QA inline ni abrir otra rama. No despachar un segundo `perf-scout` si e
 conductor ya entregó inventario: devolver los hallazgos adicionales para otra ronda.
 
 El ledger común se consulta con
-`bash ~/webapps/vps-ops-toolkit/scripts/improvement/improvement-ledger.sh --show <proyecto> --projdir=<worktree>`;
+`bash $OPS_ROOT/scripts/improvement/improvement-ledger.sh --show <proyecto> --projdir=<worktree>`;
 sus referencias a perf mantienen el ID histórico. La selección y el registro común
 son del conductor. La verificación delegada usa exclusivamente `--record-qa` del helper
 común con la ronda, SHA exacto y manifest de ejecuciones de $qa; nunca el último
@@ -127,7 +127,7 @@ tipea: es un modo posterior a `$qa`.
 
 ## Engine — el helper del ledger (llamalo; no lo reimplementes)
 
-`bash ~/webapps/vps-ops-toolkit/scripts/perf/perf-ledger.sh` (contrato y schema:
+`bash $OPS_ROOT/scripts/perf/perf-ledger.sh` (contrato y schema:
 `config/perf-ledger/README.md`):
 
 - `--show <proyecto> [--candidate=<id>]` → perfil resuelto, `unit=`, `budgets=`, `standard`,
@@ -202,15 +202,15 @@ luego ⏸️.
 ## Fase 0 — Preflight (dos llamadas; los valores viajan literales en el contexto)
 
 `<proyecto>` es el argumento; si no vino, sale del `project=` de
-`bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status` (o del nombre
+`bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status` (o del nombre
 del clon). Va **literal** en ambas llamadas — post-`EnterWorktree` Claude rechaza `$(...)`:
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --preflight <proyecto>
+bash $OPS_ROOT/scripts/qa/qa-agent.sh --preflight <proyecto>
 #   → projdir · registry · production · staging · layers · db · app_reachable · resolved_branch · host_status · pr_state · qa_memory
 ```
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/perf/perf-ledger.sh --show <proyecto>
+bash $OPS_ROOT/scripts/perf/perf-ledger.sh --show <proyecto>
 #   → codebase · ledger · standard · standard_version · profile_id · profile_source · profile_host · work_host ·
 #     profile=vcpu,ram_gb,calibrated_on · unit=… workers=… threads=… cpuquota=… memmax=… huey=… ssr=… db=… ·
 #     budgets=slots,cpu_req,cpu_ms_api,cpu_ms_page,memmax_mb,worker_mb,req_mb,rows_max,headroom_gb,timeout_s,
@@ -233,7 +233,7 @@ Qué se decide con cada clave:
   set elegido; cada uno pasa a `selected` (`--record` mínimo: `candidate`, `status: selected`,
   `report` = el reporte que esta corrida va a escribir).
 - **`standard`**: `ok` sigue · `stale`/`absent` ⇒ canónico del toolkit, fila ⚠️ y Next step
-  `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/sync-test-quality-core.sh --apply --project=<proyecto>` ·
+  `bash $OPS_ROOT/scripts/maintenance/sync-test-quality-core.sh --apply --project=<proyecto>` ·
   `no-canonical` ⇒ rail 2.
 - **`stale=[…]`** no vacío ⇒ se declara en la línea ⚙️; los stale sólo se trabajan si el
   operador eligió `review3` (o si están en el set pedido).
@@ -382,11 +382,11 @@ limpio en el worktree de sesión.
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
 SLUG="<top3|review3|candidate-slug>"
-OUT="$(bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" \
+OUT="$(bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" \
        create fix "perf-$SLUG")"
 echo "$OUT"               # imprime worktree=/branch=/base=/pr_base=
 WT="$(sed -n 's/^worktree=//p' <<<"$OUT")"
-cd "$WT" && git rev-parse --show-toplevel   # debe caer bajo ~/webapps/.wt/
+cd "$WT" && git rev-parse --show-toplevel   # debe caer bajo $FLEET_PROJECTS_ROOT/.wt/
 ```
 
 Claude Code: `EnterWorktree path=$WT` con el path literal impreso; Codex: el `cd` de arriba
@@ -466,7 +466,7 @@ devuelve su veredicto; el `tests_declared` del ledger son los archivos `target` 
 ## Fase 6 — Registro + reporte (en cualquier modo; registrar no es escribir en el proyecto)
 
 **En un host con el motor de integridad** (`[ -x /usr/local/sbin/vps-integrity ]`), el clon
-`~/webapps/vps-ops-toolkit` está fijado a la generación instalada: esta corrida no escribe ni
+`$OPS_ROOT` está fijado a la generación instalada: esta corrida no escribe ni
 commitea nada en él. El reporte va a
 `~/.local/state/vps-ops-toolkit/perf-reports/<YYYY-MM-DD>-<proyecto>-perf-<slug>.md`, fuera de
 todo clon, con el fragmento de `--record` del punto 2 y la línea de `watchlist` de la 5b
@@ -495,7 +495,7 @@ lectura, verifica el sha antes de registrar y lo registra con su fragmento.
    calcula él):
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/perf/perf-ledger.sh --record <proyecto> <<'EOF'
+bash $OPS_ROOT/scripts/perf/perf-ledger.sh --record <proyecto> <<'EOF'
 candidate: P-<cat>-NN                              # o new: true + category para un alta de modo A
 status: <diagnosed|applied|qa-pending|blocked|deferred-low-value|discarded>
 report: docs/audits/<YYYY-MM-DD>-<proyecto>-perf-<slug>.md
@@ -543,10 +543,10 @@ EOF
    commit:
 
 ```bash
-git -C ~/webapps/vps-ops-toolkit add config/perf-ledger/<codebase>.yml docs/audits/<reporte>.md config/qa-memory/<codebase>.yml
+git -C $OPS_ROOT add config/perf-ledger/<codebase>.yml docs/audits/<reporte>.md config/qa-memory/<codebase>.yml
 ```
 ```bash
-git -C ~/webapps/vps-ops-toolkit commit -m "docs(perf): record <proyecto> <ids> <status>"
+git -C $OPS_ROOT commit -m "docs(perf): record <proyecto> <ids> <status>"
 ```
 
 Commit propio en `master` del toolkit, nunca mezclado con el commit del proyecto; el push
@@ -558,7 +558,7 @@ En un host con el motor de integridad no corre: el veredicto se registra despué
 (Fase 6).
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/perf/perf-ledger.sh --record-qa <proyecto> --candidate=<id>
+bash $OPS_ROOT/scripts/perf/perf-ledger.sh --record-qa <proyecto> --candidate=<id>
 #   mide: tests_declared (present|absent|no-guard) + último docs/audits/<fecha>-<proyecto>-qa.md posterior a la corrida
 #   → qa: {status, verdict, tests, rejected_because}; verified sólo si todo present ∧ veredicto ≠ 🔴 ∧ sin rechazos
 ```

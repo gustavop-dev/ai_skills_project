@@ -96,7 +96,7 @@ IN_FLEET=false
 # - En cualquier otro caso (production explícita, sin field environment, etc.) → Signal A.
 # Esto cubre el caso de proyectos production que no declaran `environment:`
 # (el helper devuelve default=production por convención).
-OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
+OPS_ROOT="${OPS_ROOT:-${FLEET_PROJECTS_ROOT:-$HOME/webapps}/vps-ops-toolkit}"
 if [ -f "${OPS_ROOT}/projects.yml" ]; then
   MODE=check
   # shellcheck source=/dev/null
@@ -339,7 +339,7 @@ Tras el reporte, si la sesión es interactiva y NO hubo flags explícitos
 |---|---|---|
 | Aplicar el plan del dry-run | ejecuta el delete + create exactos que mostró el plan (BORRA fake data; prod sigue bloqueada por el gate) | `/fake-data-refresh <proyecto>` |
 | Re-correr con más volumen | más registros por modelo para paginación E2E profunda; delete + create de nuevo | `/fake-data-refresh <proyecto> --records=200` |
-| Dry-run del hermano staging | plan read-only de otro target real (tuhuella/vastago/tenndalux/gym_project_staging) | `/fake-data-refresh ~/webapps/<hermano> --dry-run` |
+| Dry-run del hermano staging | plan read-only de otro target real (tuhuella/vastago/tenndalux/gym_project_staging) | `/fake-data-refresh $FLEET_PROJECTS_ROOT/<hermano> --dry-run` |
 
 ---
 

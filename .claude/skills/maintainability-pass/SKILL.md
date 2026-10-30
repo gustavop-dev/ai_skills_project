@@ -9,7 +9,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, Agent, AskUserQuestion, Ente
 
 Reducir el coste comprobable de entender/cambiar un proyecto preservando sus
 contratos. Leer
-`$HOME/webapps/vps-ops-toolkit/workflows/improvement/IMPROVEMENT_STANDARDS.md`
+`$OPS_ROOT/workflows/improvement/IMPROVEMENT_STANDARDS.md`
 para modos, registro, criterio de beneficio, contexto delegado y el «Protocolo de
 validación de candidatos».
 

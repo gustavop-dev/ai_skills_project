@@ -17,7 +17,7 @@ con `systemctl stop`, no matando procesos.
 ```bash
 PROJECT_NAME=$(basename "$(pwd)")
 GUN_SVC_GUESS="${PROJECT_NAME%_staging}"
-if [[ -d /home/ryzepeck/webapps ]] \
+if [[ -d "${FLEET_VPS_ROOT:-/home/${FLEET_SSH_USER:-ryzepeck}/webapps}" ]] \
    || systemctl is-active --quiet "$GUN_SVC_GUESS.service" 2>/dev/null \
    || systemctl is-active --quiet "$PROJECT_NAME.service" 2>/dev/null; then
   echo "❌ Esto parece un VPS / entorno de producción."

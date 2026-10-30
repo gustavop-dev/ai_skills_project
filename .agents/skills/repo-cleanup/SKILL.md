@@ -83,10 +83,10 @@ reporte queda `ℹ️ n/a` con el motivo y la categoría no busca nada; si sólo
 1. **No es un template.** El nombre del repo (el directorio del clon principal, o el
    `repo=` de `session-worktree.sh status` en un worktree) no empieza con `base_`, y
    su `origin` no es el `git_repo:` de un `base_*` en
-   `~/webapps/vps-ops-toolkit/projects.yml`. Las dos URLs se comparan como
+   `$OPS_ROOT/projects.yml`. Las dos URLs se comparan como
    `owner/nombre`: `git@github.com:` y `https://github.com/` valen igual y el `.git`
    final no cuenta (la regla de `norm_slug` en
-   `~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh`). En un
+   `$OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh`). En un
    `base_*` no corre nunca, ni con argumento explícito.
 2. **Es un proyecto vigente:** `status: active` o `dev_only`, sin `lifecycle: legacy`;
    un repo fuera del registro cuenta como vigente. Un `scaffold` sin prefijo `base_`
@@ -103,12 +103,12 @@ referencia de lo que sigue. Con `next.config.*` la variante es React y el invent
 de $pre-staging-cleanup sirve de guía; con `vite.config.*` y `.vue` es Vue, sin
 inventario en el toolkit: manda la copia. $pre-staging-cleanup y
 $new-project-setup son local-skills: si el repo no las tiene instaladas, se leen
-en `~/webapps/vps-ops-toolkit/workflows/.local-skills/.claude/<skill>.md`.
+en `$OPS_ROOT/workflows/.local-skills/.claude/<skill>.md`.
 
 | Bloque | Qué incluye | Acción por defecto |
 |---|---|---|
 | 7.a Textos | «Base Django React Next Feature», «Base Django Vue Feature»; `metadata` y `<title>`; el `name` de `package.json`; i18n y correos con la marca del template; el Client ID de OAuth del template ($new-project-setup, fase S6) | ACTUALIZAR |
-| 7.b Nombres en textos y config | jobs de CI, units y rutas `base_django_*` o `/home/ryzepeck/webapps/base_*`, `BACKUP_STORAGE_PATH` del template en `.env.example`, menciones en docs | ACTUALIZAR |
+| 7.b Nombres en textos y config | jobs de CI, units y rutas `base_django_*` o `$FLEET_PROJECTS_ROOT/base_*`, `BACKUP_STORAGE_PATH` del template en `.env.example`, menciones en docs | ACTUALIZAR |
 | 7.c Rutas y pantallas demo | catálogo, productos, ventas, blog, carrito, checkout, manual, backoffice, admin-login, dashboard demo, con sus urls, vistas, stores, componentes y links | BORRAR si no se adoptaron |
 | 7.d Datos demo | generadores de modelos demo (`create_blogs`, `create_products`, `create_sales`), fixtures e imágenes de ejemplo | BORRAR con su feature |
 | 7.e README y docs | secciones «Reference Projects» y «Customization» del README; `backend/CLAUDE.md`, `frontend/CLAUDE.md` y guías sin tocar desde la copia; el Memory Bank que describe el template ($methodology-setup) | ACTUALIZAR o BORRAR |
@@ -180,8 +180,8 @@ cuentan el silencio, un «ok» anterior ni la aprobación de otro lote o de otra
 sesión. En headless, cron o barrido, la categoría sólo reporta.
 
 **Aprobado, se borra en el worktree de sesión y con PR:**
-1. `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh create chore template-cleanup`
-   y `EnterWorktree path=$HOME/webapps/.wt/<repo>/template-cleanup`; nunca en el clon
+1. `bash $OPS_ROOT/scripts/maintenance/session-worktree.sh create chore template-cleanup`
+   y `EnterWorktree path=$FLEET_PROJECTS_ROOT/.wt/<repo>/template-cleanup`; nunca en el clon
    principal.
 2. Un commit por bloque aprobado: `git rm` de lo aprobado más su arrastre, nada más
    (`chore(cleanup): remove template leftovers (T1, T3)`).

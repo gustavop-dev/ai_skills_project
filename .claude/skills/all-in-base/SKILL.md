@@ -12,7 +12,7 @@ argument-hint: "[--check-only] [--all-repos]"
 >   **"En la base" es informativo**: el merge no es de la sesión.
 > - **Alcance default = los repos que esta sesión tocó**: la lista sale del contexto
 >   de la conversación (vos sabés qué repos editaste/commiteaste en esta sesión);
->   cada candidato se verifica con `ls -d ~/webapps/<repo>/.git`. Si el contexto no
+>   cada candidato se verifica con `ls -d $FLEET_PROJECTS_ROOT/<repo>/.git`. Si el contexto no
 >   identifica ningún repo (sesión recién resumida, contexto compactado), fallback:
 >   el repo del **cwd**.
 > - `--check-only`: sólo el veredicto (tabla SÍ/NO por repo), cero mutación — ni
@@ -88,11 +88,11 @@ Reportá `🎯 all-in-base — check-only=<0|1> all-repos=<0|1>`.
 **Armado de la lista de repos:**
 - **Default**: enumerá los repos que ESTA sesión tocó — editó, commiteó — según tu
   propio contexto de la conversación. Verificá cada candidato con
-  `ls -d ~/webapps/<repo>/.git` (una llamada por repo; `[ -d … ]` en un bucle sería
+  `ls -d $FLEET_PROJECTS_ROOT/<repo>/.git` (una llamada por repo; `[ -d … ]` en un bucle sería
   rechazado). Si el contexto no identifica ninguno (sesión nueva/resumida): el repo
   del cwd, y decilo en el reporte.
 - **Dónde se censa cada repo:** en el **worktree de la sesión**
-  (`~/webapps/.wt/<repo>/<slug>`), donde vive su rama — nunca en el clon principal,
+  (`$FLEET_PROJECTS_ROOT/.wt/<repo>/<slug>`), donde vive su rama — nunca en el clon principal,
   que es el checkout de deploy. El helper resuelve el path solo (Phase 1); si querés
   verlos todos: `session-worktree.sh list --all --porcelain`.
 - **`--all-repos`**: corre desde el clon del toolkit (no hay worktree ni gates ahí):
@@ -114,7 +114,7 @@ allá un tree sucio significa "no evaluable ⇒ seguir el flujo"; acá la pregun
 **a) El repo donde estás parado** (tu worktree de sesión) — un registro completo:
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh status
 ```
 
 **b) Cualquier otro repo que tocó la sesión** — post-entry no hay `cd` ni
@@ -122,7 +122,7 @@ bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
 fila por worktree enlazado:
 
 ```bash
-bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh list --project=<repo> --porcelain
+bash $OPS_ROOT/scripts/maintenance/session-worktree.sh list --project=<repo> --porcelain
 ```
 
 Columnas de `list --porcelain` (14, TSV):
@@ -141,13 +141,13 @@ gh pr checks <pr_number literal> --json bucket -q '[.[].bucket] | unique | join(
 repo, así que `git -C` sí está permitido; lo que no se hace nunca es `cd` al clon:
 
 ```bash
-git -C ~/webapps/vps-ops-toolkit fetch origin master --quiet
+git -C $OPS_ROOT fetch origin master --quiet
 ```
 ```bash
-git -C ~/webapps/vps-ops-toolkit status --porcelain
+git -C $OPS_ROOT status --porcelain
 ```
 ```bash
-git -C ~/webapps/vps-ops-toolkit merge-base --is-ancestor HEAD origin/master
+git -C $OPS_ROOT merge-base --is-ancestor HEAD origin/master
 ```
 
 Exit `0` de ese último = `ancestor-de-origin/master=yes`; exit `1` = `no`.
@@ -169,7 +169,7 @@ Exit `0` de ese último = `ancestor-de-origin/master=yes`; exit `1` = `no`.
   `release_merge` no la nombra (`none` = release en hold). Para el caso b (`list`, que
   no trae esas claves) o si el registro no fuera concluyente, la fuente sigue siendo el
   resolver, con un comando simple:
-  `bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <repo>`
+  `bash $OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh --check <repo>`
   — si `CUR ∈ open_pr` y `release_merge=` no la nombra, es hold. Para un SÍ no hace
   falta el resolver.
 - Sesgo heredado de 1.5: `in_base=?` o `ci=?`/`pr_state=?` (git < 2.38, conflicto del
@@ -242,7 +242,7 @@ esta skill:
    **sólo cuando el trabajo ya aterrizó** — `pr_state=MERGED` o `in_base=yes` en el
    censo —, no por estar ENTREGADO (con `--check-only`: sólo listarlo como retirable):
    ```bash
-   bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh remove <slug> --project=<repo>
+   bash $OPS_ROOT/scripts/maintenance/session-worktree.sh remove <slug> --project=<repo>
    ```
    Sin `--force`, nunca (el helper no lo tiene). **Git rechaza retirar el worktree en
    el que estás parado**: si el retirable es el TUYO, reportalo como retirable y

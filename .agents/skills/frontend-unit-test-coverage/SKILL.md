@@ -169,7 +169,7 @@ abstention **is not a failure**.
 7. Validate:
 
    ```bash
-   bash $HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --verify <proyecto> --files=<archivo1,archivo2>
+   bash $OPS_ROOT/scripts/qa/qa-agent.sh --verify <proyecto> --files=<archivo1,archivo2>
    # equivalente crudo (fallback): python3 scripts/test_quality_gate.py --repo-root . \
    #   --suite frontend-unit --semantic-rules strict --junk-severity=error --include-file <archivo>
    ```
@@ -181,7 +181,7 @@ Tras el reporte, si la sesión es interactiva y NO hubo flags explícitos
 
 | Opción (label) | description (costo/efecto) | preview (comando exacto) |
 |---|---|---|
-| Re-correr el gate sobre el lote | valida los archivos tocados contra las reglas anti-basura | `bash $HOME/webapps/vps-ops-toolkit/scripts/qa/qa-agent.sh --verify <proyecto> --files=<a,b>` |
+| Re-correr el gate sobre el lote | valida los archivos tocados contra las reglas anti-basura | `bash $OPS_ROOT/scripts/qa/qa-agent.sh --verify <proyecto> --files=<a,b>` |
 | Correr sólo los tests nuevos | los archivos tocados, no la suite entera | `cd frontend && npm test -- path/to/file.spec.ts` |
 | Pasar a escritura | implementar los tests que el análisis dejó descritos | `$frontend-unit-test-coverage --apply` |
 

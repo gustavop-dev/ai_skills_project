@@ -54,7 +54,7 @@ Dos hallazgos medidos que la motivan (proyecto de referencia, ago-2026, CI de 71
   puede esperar 25 min en cola antes de arrancar. Se reportan los dos, y se
   atribuye la mejora **sólo** al job.
 - **Branching (sólo `--apply`):** protocolo por sesión — worktree propio bajo
-  `~/webapps/.wt/<repo>/` con slug `ci-optimize`, rama `ci/<DDMMYYYY>-ci-optimize`,
+  `$FLEET_PROJECTS_ROOT/.wt/<repo>/` con slug `ci-optimize`, rama `ci/<DDMMYYYY>-ci-optimize`,
   cortada de la BASE que resuelve la coordenada. Push + PR al primer push con
   `Sesión:`/`Intención:` en el body. La skill **PARA con el PR abierto**.
 - **Un cambio por entrega.** Después de cada optimización la cola se mueve de
@@ -213,10 +213,10 @@ clon principal):
 
 ```bash
 # pre-entry: corre en el clon principal, antes de EnterWorktree
-bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" create ci ci-optimize
+bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" create ci ci-optimize
 ```
 
-Y entrar: `EnterWorktree path=$HOME/webapps/.wt/<repo>/ci-optimize`.
+Y entrar: `EnterWorktree path=$FLEET_PROJECTS_ROOT/.wt/<repo>/ci-optimize`.
 
 **Los tres gates de correctitud, no negociables.** Shardear rompe en silencio;
 sin estos tres, el verde miente:

@@ -180,7 +180,7 @@ sin tocarlo. Casos que no son ése:
 - **Estás en el clon principal, sobre `main`/`master` o la release, con cambios
   sueltos** → **acá no se crea rama ni se commitea** (el hook `PreToolUse` lo deniega,
   y es el checkout del servicio corriendo): creá un worktree con
-  `bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" create <prefijo> <slug>`,
+  `bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" create <prefijo> <slug>`,
   entrá (Claude: `EnterWorktree path=…` · Codex: `cd …`) y **re-invocá desde ahí**.
 - **El fix loop (Phase 4) necesita un tree** donde escribir: el **worktree de la sesión
   dueña** del PR, o se **delega el fix a esa sesión** (el mecanismo de $merge-queue
@@ -195,7 +195,7 @@ $all-projects — que valida la rama contra los **PRs abiertos**, no contra el
 `projects.yml` estático.
 
 ```bash
-COORD="$(bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh" \
+COORD="$(bash "$OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh" \
          --check "$REPO_NAME" 2>/dev/null)"
 PR_STATE="$(sed -n 's/^pr_state=//p'   <<<"$COORD")"
 HOST_ST="$(sed -n 's/^host_status=//p' <<<"$COORD")"
@@ -210,7 +210,7 @@ MERGE_ALLOWED=1
 # server: empiezan a saltarlo, y el commit aterriza en la rama equivocada).
 if [ "$HOST_ST" = "wrong-host" ]; then
     echo "⏭️  $REPO_NAME trabaja en $VPS_WORK, no en este host — abortando sin tocar nada."
-    echo "    Continuá allá:  tailscale ssh ryzepeck@$VPS_WORK"
+    echo "    Continuá allá:  tailscale ssh $FLEET_SSH_USER@$VPS_WORK"
     exit 0
 fi
 
@@ -328,14 +328,14 @@ DEFAULT_BRANCH="$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name
 #   2) sin PR: repo participante con release viva (pr_state=single) y no estamos
 #      parados EN la release → la release; 3) si no → la default.
 # El nombre del proyecto sale del git-common-dir (en un worktree el toplevel es
-# ~/webapps/.wt/<repo>/<slug>, no el repo).
+# $FLEET_PROJECTS_ROOT/.wt/<repo>/<slug>, no el repo).
 BASE_INT="$DEFAULT_BRANCH"
 PR_BASE="$(gh pr view "$CURRENT" --json baseRefName,state -q 'select(.state=="OPEN") | .baseRefName' 2>/dev/null || true)"
 if [ -n "$PR_BASE" ]; then
     BASE_INT="$PR_BASE"
 else
     PROJ="$(basename "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")")"
-    RESOLVER="$HOME/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh"
+    RESOLVER="$OPS_ROOT/scripts/maintenance/resolve-work-coordinate.sh"
     if [ -x "$RESOLVER" ]; then
         RB="$(bash "$RESOLVER" --check "$PROJ" 2>/dev/null | awk -F= '$1=="pr_state"{ps=$2} $1=="resolved_branch"{rb=$2} END{if(ps=="single") print rb}')"
         [ -n "$RB" ] && [ "$RB" != "$CURRENT" ] && BASE_INT="$RB"
@@ -576,7 +576,7 @@ pregunta de ambigüedad), la autorización es one-shot — limpiála de
 `projects.yml` acotando el borrado al bloque del proyecto:
 
 ```bash
-OPS="$HOME/webapps/vps-ops-toolkit"
+OPS="$OPS_ROOT"
 awk -v proj="$REPO_NAME" '
   /^[[:space:]]*- name:/ { in_p = ($NF == proj) }
   !(in_p && $1 == "release_merge:")
@@ -601,7 +601,7 @@ servicio corriendo):
   **sesión dueña** lo retira ella misma con `$all-in-base` cuando ve su PR ya
   mergeado (`session-worktree.sh remove <slug>`, sin `--force`); los huérfanos los
   junta el **gc del operador**
-  (`bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" gc --apply`).
+  (`bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" gc --apply`).
   Esta skill no retira worktrees ajenos.
 - **En el clon principal** (operador): dejar checkout y HEAD intactos. Consultar
   `refs/heads/<deploy_branch>` con `ls-remote`, traer sólo el SHA si falta con el
@@ -728,7 +728,7 @@ cada host remoto vía Tailscale.
 if [ "$(basename "$(git rev-parse --show-toplevel)")" != "vps-ops-toolkit" ]; then
     echo "⏭️  Repo no-toolkit — sin propagación."
 else
-    bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/propagate-toolkit-commit.sh" --apply
+    bash "$OPS_ROOT/scripts/maintenance/propagate-toolkit-commit.sh" --apply
 fi
 ```
 
@@ -801,7 +801,7 @@ del CI más lento.
 pueden estar sucios o parados en una rama de release.
 
 ```bash
-OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
+OPS_ROOT="${OPS_ROOT:-${FLEET_PROJECTS_ROOT:-$HOME/webapps}/vps-ops-toolkit}"
 source "$OPS_ROOT/scripts/lib/bootstrap-common.sh"
 PROJECT_DEFS_QUIET=1 source "$OPS_ROOT/scripts/lib/project-definitions.sh"
 REPOS=("${LOCAL_PROJECTS[@]}" "vps-ops-toolkit")
@@ -813,9 +813,9 @@ printf '   - %s\n' "${REPOS[@]}"
 
 **Sobre qué opera C1:** los **PRs de sesión ya abiertos** y, si hace falta un tree,
 los **worktrees de sesión** de cada repo
-(`bash "$HOME/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh" list --all`).
+(`bash "$OPS_ROOT/scripts/maintenance/session-worktree.sh" list --all`).
 El **clon principal** de un repo de proyecto es el checkout del servicio: se lee, no
-se commitea. Por cada repo en `REPOS` (lectura desde `$HOME/webapps/<repo>`, sin
+se commitea. Por cada repo en `REPOS` (lectura desde `$FLEET_PROJECTS_ROOT/<repo>`, sin
 `checkout` ni `stash`):
 
 1. **Nada que hacer** — `git status --porcelain` vacío **y** sin commits sin
@@ -1043,7 +1043,7 @@ Reemplazá ✅ por ⚠️/❌/⏸️ según corresponda y agregá `## Next steps
 - **`release_merge` stale** (nombra una rama sin PR abierto) → next step con la
   limpieza del campo (el `awk` de Phase 5) o su corrección en projects.yml.
 - **Host equivocado** (`host_status=wrong-host`) → `⏭️ merge-when-green — N/A`,
-  fila `Coordenada` en ⏭️ y next step `tailscale ssh ryzepeck@<vps_work>`.
+  fila `Coordenada` en ⏭️ y next step `tailscale ssh $FLEET_SSH_USER@<vps_work>`.
 - **Coordenada no resoluble** → fila `Coordenada` en ℹ️ diciendo que el guard de
   release no pudo evaluarse; nunca omitir la fila.
 - Fix loop que pausó por código de prod → ⏸️ + el cambio a aprobar.
