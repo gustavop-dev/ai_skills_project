@@ -24,7 +24,7 @@ cheapest legal move. Measured with the junk detectors:
 | Duplicated unit tests | 146 |
 | Assertions too weak to fail | 164 |
 
-These figures are from **projectapp (2026-07-24)**; fleet-wide the no-interaction
+These figures are from **a reference project (2026-07-24)**; fleet-wide the no-interaction
 count is **1152 / 3271 E2E tests (35%)** (`docs/audits/test-junk-audit-2026-07-24.md`).
 
 ## Relationship to the other test skills

@@ -359,7 +359,7 @@ Genera (gracias a las extensiones del schema 2026-05-18):
 - `SHA256SUMS`
 
 Es el paso pesado del flow. Tiempo proporcional a media + DB size
-(~30s mimittos, ~5min projectapp).
+(~30s un proyecto chico, ~5min uno grande).
 
 No selecciona `ls -t`: crea un root único por corrida, parsea el path exacto
 emitido por el backup y lo ata al ledger 0600 junto con SHA256 del manifest,
@@ -482,7 +482,7 @@ Si el proyecto tiene un staging twin en el mismo VPS (caso `kore_project` + `kor
 
 ### `db.sqlite3` huérfano
 
-Si origin tiene `backend/db.sqlite3` además de MySQL (caso `projectapp`), la skill emite warn pero NO copia automáticamente. Casos:
+Si origin tiene `backend/db.sqlite3` además de MySQL (caso típico de proyectos legados), la skill emite warn pero NO copia automáticamente. Casos:
 - Si es runtime de silk → ignorar (silk lo regenera en target)
 - Si tiene state real → copiar manual: `scp <origin>:/home/ryzepeck/webapps/<proj>/backend/db.sqlite3 <target>:/home/ryzepeck/webapps/<proj>/backend/`
 

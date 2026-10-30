@@ -96,7 +96,7 @@ IN_FLEET=false
 # - En cualquier otro caso (production explícita, sin field environment, etc.) → Signal A.
 # Esto cubre el caso de proyectos production que no declaran `environment:`
 # (el helper devuelve default=production por convención).
-OPS_ROOT=/home/ryzepeck/webapps/vps-ops-toolkit
+OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
 if [ -f "${OPS_ROOT}/projects.yml" ]; then
   MODE=check
   # shellcheck source=/dev/null

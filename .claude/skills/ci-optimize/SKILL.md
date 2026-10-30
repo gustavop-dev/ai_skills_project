@@ -22,7 +22,7 @@ Bajar el tiempo de un CI **eligiendo bien qué tocar**. El valor de esta skill n
 está en shardear: está en decir **qué NO shardear**, porque la respuesta obvia
 suele gastar esfuerzo en cambios que no mueven el número.
 
-Dos hallazgos medidos que la motivan (projectapp, ago-2026, CI de 71-73 min → 15):
+Dos hallazgos medidos que la motivan (proyecto de referencia, ago-2026, CI de 71-73 min → 15):
 
 1. **El conteo de tests no predice el tiempo.** Un directorio tenía el 29% de los
    tests y el 9% del tiempo; otro el 18% y el 43%. Repartir por cantidad —o por
@@ -242,7 +242,7 @@ del PR— dejan de encontrarlo.
 **Nombres de artifact:** usar `${{ strategy.job-index }}` y no `matrix.shard`.
 `upload-artifact@v4` exige nombres únicos y un shard `"1/4"` lleva una barra.
 
-**Referencias de implementación** (projectapp, ya en `main`): `scripts/ci/backend-shard-plan.py`
+**Referencias de implementación** (proyecto de referencia): `scripts/ci/backend-shard-plan.py`
 mide y emite los pesos; `backend-shard-files.py` reparte y verifica completitud
 con `--check N`; `backend-merge-shards.py` combina coverage y funde los junit en
 un `<testsuite>` único con los contadores sumados.

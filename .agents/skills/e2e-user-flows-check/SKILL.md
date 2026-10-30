@@ -166,7 +166,7 @@ declared class needs its own qualifying test.
 
 `expectedSpecs: 0` is a different case: the legacy sentinel for "intentionally
 uncovered". The audit reports it as `exempt` — do **NOT** migrate it to
-`outcomes` (projectapp carries 37 of them). It is not a gap.
+`outcomes` (a mature project can carry dozens). It is not a gap.
 
 `roles: [...]` is documentation only — the audit does not validate it. The
 practical rule it encodes: if two roles see different things in the same view,

@@ -1,6 +1,6 @@
 ---
 name: "observability-pass"
-description: "Pasada de observabilidad y tolerancia a fallos de UN proyecto: logs, métricas, errores, correlación/tracing, alertas, diagnóstico, timeouts, retries, idempotencia y concurrencia. Diagnostica hasta 3 candidatos; --apply corrige instrumentación o fallos acotados y prepara $qa. Evalúa beneficio antes de cambiar y registra decisiones. Diseña futuras entregas de eventos a ProjectApp conforme a su API v1 existente; no instala un emisor, activa monitoreo ni genera tokens automáticamente."
+description: "Pasada de observabilidad y tolerancia a fallos de UN proyecto: logs, métricas, errores, correlación/tracing, alertas, diagnóstico, timeouts, retries, idempotencia y concurrencia. Diagnostica hasta 3 candidatos; --apply corrige instrumentación o fallos acotados y prepara $qa. Evalúa beneficio antes de cambiar y registra decisiones. No instala un emisor, activa monitoreo ni genera tokens automáticamente."
 ---
 
 # Observability pass
@@ -9,9 +9,6 @@ Poder detectar y explicar un fallo real, y limitar sus efectos cuando una
 dependencia externa, retry o carrera interviene. Leer
 `$HOME/webapps/vps-ops-toolkit/workflows/improvement/IMPROVEMENT_STANDARDS.md`,
 con su «Protocolo de validación de candidatos».
-Para integración con ProjectApp, leer también
-`workflows/improvement/PROJECTAPP_EVENT_CONTRACT.md` en ese mismo toolkit y
-corroborar la versión vigente de la API antes de proponer un payload.
 
 ## Cómo invocar este skill
 
@@ -92,9 +89,8 @@ verificador re-lee cada `file:line` y trata de refutar:
    de idempotencia. Se demuestra con fixtures, reloj simulado o dos llamadas en
    la DB de test, nunca con dependencias reales.
 5. **Corrección dentro del frente.** No crea ni instala un emisor, no registra
-   fuentes, no genera tokens, no envía HTTP a ProjectApp, no activa monitoreo ni
-   contrata servicios; un payload propuesto respeta la API v1 de
-   `PROJECTAPP_EVENT_CONTRACT.md`. Lo que exceda eso queda como propuesta o
+   fuentes, no genera tokens, no envía HTTP a colectores externos, no activa monitoreo ni
+   contrata servicios. Lo que exceda eso queda como propuesta o
    «integración pendiente», nunca como recepción verificada.
 6. **Privacidad.** La corrección no registra argumentos, SQL completo, bodies,
    tokens ni identificadores de usuarios como dimensión. Si el código actual ya
@@ -116,7 +112,7 @@ pregunta de la tabla de §1, con el esquema del ledger de cobertura del contrato
 `unit`, `process` y `question`; sus chequeos nombran la interfaz externa, las rutas
 seguidas (inicio, error, recuperación, cancelación) y las señales existentes con
 `file:line`. Un control fuera del repo que quedó sin observar deja la unidad
-`blocked` con su razón. Una unidad aparte declara la integración ProjectApp:
+`blocked` con su razón. Una unidad aparte declara la integración con un colector externo de eventos:
 `covered` si existe y se auditó, `deferred` con «integración pendiente», o
 `not_applicable`.
 
@@ -143,12 +139,11 @@ fuera de alcance queda como propuesta. Seguridad del saneamiento pertenece a
 $security-pass; coste de la instrumentación a $perf-pass; el conductor
 asigna una causa única y evita aplicar dos cambios que compitan.
 
-## 3. Integración futura con ProjectApp
+## 3. Integración futura con un colector de eventos
 
-El contrato común de eventos reutiliza `POST /api/monitoring/v1/ingest/` versión
-1 con `Bearer`, recurso/fuente autorizados y claves admitidas. Esta entrega de
-la skill define instrucciones: **no construye ni instala un emisor, cambia
-ProjectApp, registra fuentes, genera tokens o envía HTTP**.
+Si el proyecto envía (o enviará) eventos a un colector externo, respetar el
+contrato vigente de ese colector. Esta skill define instrucciones: **no
+construye ni instala un emisor, registra fuentes, genera tokens o envía HTTP**.
 
 Si un proyecto carece de emisor/fuente autorizados, producir propuesta y marcar
 “integración pendiente”; no declarar recepción verificada. Si ya tiene
@@ -159,8 +154,8 @@ desacoplada del flujo de negocio, y sólo confirmará entrega tras ACK válido.
 `external_id` identifica la entrega y persiste en todos sus retries;
 `fingerprint` identifica el problema dentro de una fuente/recurso. No usar el
 request ID efímero como fingerprint. La recuperación técnica no cierra un caso
-manualmente. Trace/span IDs y evidencia anidada **no están admitidos en v1**;
-proponer una extensión versionada separada si resultan necesarios, sin enviar
+manualmente. Si el contrato del colector no admite trace/span IDs o evidencia anidada,
+proponer una extensión versionada separada, sin enviar
 campos inventados ni esconderlos dentro de un string.
 
 ## 4. Guion, registro y cierre
@@ -185,8 +180,7 @@ y pendientes; no abrir PR/commit propios.
 
 ## Output final
 
-Usar $output-protocol: Señales · Diagnóstico · Resiliencia · Privacidad ·
-ProjectApp · Validación · Cobertura · Valor · QA, con el estado del frente del
+Usar $output-protocol: Señales · Diagnóstico · Resiliencia · Privacidad · Integración · Validación · Cobertura · Valor · QA, con el estado del frente del
 contrato (MADURO, NO VALE LA PENA, VALE LA PENA, BLOQUEADO o FALTA EVIDENCIA).
 Separar recepción demostrada de propuesta pendiente y alcance suficiente de
 ausencia de evidencia. Cerrar con

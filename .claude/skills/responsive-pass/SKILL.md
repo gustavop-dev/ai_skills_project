@@ -187,7 +187,7 @@ Qué se decide con cada clave:
   `$OPS/workflows/testing/RESPONSIVE_STANDARDS.md`, fila ⚠️ y Next step
   `bash $OPS/scripts/maintenance/sync-test-quality-core.sh --apply --project=<proyecto>` ·
   `no-canonical` ⇒ rail 2.
-- **`project_doc`** (p. ej. projectapp `docs/methodology/responsive-standard.md`): es el
+- **`project_doc`** (p. ej. `docs/methodology/responsive-standard.md`): es el
   contrato de **CÓMO** corregir dentro de su alcance (componentes, variantes, patrones); el
   canónico fija el **QUÉ** (invariantes). Se lee UNA vez en la Fase 2.
 - **`responsive_cfg=no`** ⇒ breakpoints por default del framework (Tailwind: sm 640 · md 768 ·
@@ -336,7 +336,7 @@ aplicación. Sólo pasan los `confirmed` elegibles. Registrar los diferidos y qu
 sin elegibles, ir a la Fase 6 y explicar dónde conviene parar. No crear commits vacíos.
 
 Por hallazgo `corregible`: qué cambia (clase/markup/CSS, usando las variantes y componentes del
-`project_doc` cuando el módulo cae en su alcance — projectapp `/panel/**`: `panel-*` +
+`project_doc` cuando el módulo cae en su alcance — p. ej. `/panel/**`: `panel-*` +
 `BaseResponsiveTable`/`BaseResponsiveTabs`, nunca Tailwind crudo), en qué `file:line`, qué
 ancho(s) arregla, y riesgo (¿el archivo lo usa otro módulo? ⇒ observación con el módulo
 dueño). Agregar `data-testid` / `aria-label` a los elementos que el guion va a usar ES parte
@@ -610,7 +610,6 @@ explicar por qué conviene parar y la condición de reapertura; no repetir la pa
 | QA del módulo | /qa autoría + ejecución en vivo de los E<n>; commitea tests en su propia rama | `/qa <proyecto> --apply --layers=e2e` |
 | Aplicar la propuesta | edita el módulo en rama de sesión + PR, declara flows (sólo tras diagnóstico) | `/responsive-pass <proyecto> --module=<id> --apply` |
 | Siguiente módulo | diagnóstico del próximo pendiente del ledger | `/responsive-pass <proyecto> --module=<next_suggested>` |
-| Reporte para el cliente | reporte no técnico de esta pasada | `/client-report responsividad de <module> en <proyecto>` |
 
 Nunca como fila: merge del PR (`/merge-queue`/operador va en Next steps; `/merge-when-green`
 es operator-only), deploy, git destructivo — blocklist §4.

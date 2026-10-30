@@ -44,7 +44,7 @@ Si la solicitud encaja en cualquiera de estos, ejecutar el flujo de pre-flight c
 
 ```bash
 # Cargar helpers del fleet (idéntico al patrón que usan server-alerts.sh, backup-mysql-and-media.sh)
-OPS_ROOT=/home/ryzepeck/webapps/vps-ops-toolkit
+OPS_ROOT="$HOME/webapps/vps-ops-toolkit"
 MODE=check
 source "${OPS_ROOT}/scripts/lib/bootstrap-common.sh"
 source "${OPS_ROOT}/scripts/lib/project-definitions.sh"
@@ -288,7 +288,7 @@ Mover los archivos relevantes **antes** del `rm -rf` a una ruta explícita que e
 PROJ=azurita
 # Paso A: detecta env=staging, DOMAIN=azurita.projectapp.co, DB=sqlite
 # Paso B: count de modelos clave; si OK seguir, si vacío correr create_fake_data
-# Paso C: reusar /home/ryzepeck/webapps/azurita/.playwright_staging/sessions/admin.json
+# Paso C: reusar ~/webapps/azurita/.playwright_staging/sessions/admin.json
 # Paso D: URL=https://azurita.projectapp.co
 # Paso E: ARTIFACTS_DIR=/tmp/playwright-mcp-azurita/<RUN_ID>
 ```
@@ -346,7 +346,7 @@ Flujo:
 
 1. Bootstrap sub-agentes:
    ```bash
-   cd /home/ryzepeck/webapps/candle_staging_project
+   cd ~/webapps/candle_staging_project
    [ ! -d .github/chatmodes ] && npx playwright init-agents --loop=claude
    ```
 2. Crear/actualizar `frontend/e2e/seed.spec.ts` con `storageState: '<ruta a cliente.json>'`.

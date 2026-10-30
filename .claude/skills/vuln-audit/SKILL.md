@@ -290,7 +290,7 @@ en batch (solo `--apply`). En `--upgrade` la aplicación es el loop de
    npm --prefix frontend outdated --json > /tmp/<proyecto>-npm-outdated.json || true
    ```
    `npm outdated` retorna exit 1 cuando hay outdated; eso es esperado, no es error. En un
-   clon de deploy estático (sin `node_modules`, p.ej. projectapp) `npm outdated` marca
+   clon de deploy estático (sin `node_modules`, p.ej. un frontend ya compilado) `npm outdated` marca
    MISSING: `current` se toma de `package-lock.json` (`packages."node_modules/<pkg>".version`)
    — no se instala nada en el clon principal.
 

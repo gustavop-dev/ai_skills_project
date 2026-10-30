@@ -11,7 +11,7 @@ estructura. Esta skill actualiza todo lo que la vista muestra —y lo que fija e
 contenido en tests, contratos y docs— a partir de lo que cambió. `--check` es la
 auditoría read-only (reemplaza a `view-map-audit`, que queda como alias).
 
-## Qué muestra la vista y de dónde sale (layout de projectapp)
+## Qué muestra la vista y de dónde sale (layout de referencia)
 
 | Superficie | Fuente | Guardia |
 |---|---|---|
@@ -101,7 +101,7 @@ bash ~/webapps/vps-ops-toolkit/scripts/maintenance/session-worktree.sh status
 ```
 
 En una auditoría `--check` desde el clon principal, resolver la base mediante
-el proyecto canónico del registry (en projectapp, `projectapp`):
+el proyecto canónico del registry (p. ej. `<proyecto>`):
 
 ```bash
 bash ~/webapps/vps-ops-toolkit/scripts/maintenance/resolve-work-coordinate.sh --check <proyecto>

@@ -81,15 +81,15 @@ Update the flow registry if new user flows are created — o invocar [[e2e-user-
 
 Only for projects that expose MCP connectors — skip this section entirely when
 the project has no MCP contract registry. If the changed model, serializer,
-service, lifecycle or relation belongs to a module listed in that registry (in
-projectapp, `backend/content/mcp/contracts.py`), the same delivery MUST:
+service, lifecycle or relation belongs to a module listed in that registry (e.g.
+`backend/<app>/mcp/contracts.py`), the same delivery MUST:
 
 - classify every added or changed field as read-only, read/write, or
   deliberately excluded with a concrete reason;
 - compare tool descriptions, input schemas, handlers, filters and response
   payloads against the panel's current serializer/service contract;
 - preserve the shared token auth, actor attribution, audit and throttle pattern;
-- update the project's MCP validation runbook (in projectapp,
+- update the project's MCP validation runbook (e.g.
   `docs/MCP_VALIDATION_RUNBOOK.md`) and run the focused MCP contract tests plus
   the create/read/update/error cases.
 
@@ -110,7 +110,7 @@ sólo cambios acotados dentro de LÍMITES en el mismo worktree. Su salida es el 
 
 Sólo para proyectos con Mapa de vistas — saltear esta sección entera si el repo
 no tiene `frontend/config/viewCatalog.js` o si la skill [[view-map-update]] no
-está instalada para este runtime (en projectapp, `/panel/views`). Si la feature
+está instalada para este runtime (p. ej. `/panel/views`). Si la feature
 agregó, quitó, renombró o cambió de propósito una página, pestaña, modal o
 capacidad visible, la misma entrega DEBE correr [[view-map-update]] con
 `--apply --diff` (nunca pregunta: hereda el gating de esta checklist), para que

@@ -331,7 +331,7 @@ cambios. Después de la tabla: las **descartadas por bajo retorno**, una línea 
 huecos del crítico y obligaciones `blocked`).
 
 Distinguir «no conviene seguir en este alcance» de «no se revisó». En `--check`, no
-presentar commits, reportes ni PRs como hechos ni prometer una recepción ProjectApp
+presentar commits, reportes ni PRs como hechos ni prometer una recepción externa
 que no se ejecutó. Next steps: `(operador) $merge-queue` (sólo como texto) y
 $all-in-base `--check-only`.
 

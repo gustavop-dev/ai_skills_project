@@ -1,28 +1,4 @@
 {
   "model": "opus",
-  "effortLevel": "high",
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "timeout 20 bash /home/ryzepeck/webapps/vps-ops-toolkit/scripts/maintenance/session-start-git-status.sh 2>&1 || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "timeout 10 bash /home/ryzepeck/webapps/vps-ops-toolkit/scripts/maintenance/stop-check-user-flows.sh 2>&1 || true"
-          }
-        ]
-      }
-    ]
-  }
+  "effortLevel": "high"
 }

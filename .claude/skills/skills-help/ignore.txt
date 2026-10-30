@@ -4,4 +4,4 @@
 # (_output-protocol ya se oculta siempre; no hace falta listarlo.)
 #
 # Ejemplo (descomentá para ocultar):
-# proposal-create
+# repo-cleanup

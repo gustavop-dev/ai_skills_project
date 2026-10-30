@@ -638,7 +638,6 @@ otra pasada sobre el mismo alcance. En modo delegado, el conductor emite estas a
 | QA de los presupuestos | $qa escribe y corre los tests de presupuesto del guion; commitea en su propia rama (apilada) | `$qa <proyecto> --apply --layers=<capas>` |
 | Aplicar la propuesta | edita los `paths` de los candidatos en rama de sesión + PR (sólo tras diagnóstico) | `$perf-pass <proyecto> --candidate=<ids> --apply` |
 | Siguiente top 3 | diagnóstico del próximo set del ledger | `$perf-pass <proyecto> --top3` |
-| Reporte para el cliente | reporte no técnico de esta pasada | `$client-report rendimiento de <proceso> en <proyecto>` |
 
 Nunca como fila: merge del PR (`$merge-queue`/operador va en Next steps; `$merge-when-green`
 es operator-only), deploy, git destructivo, cambios de infra — blocklist §4.

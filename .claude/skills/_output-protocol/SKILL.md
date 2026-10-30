@@ -137,7 +137,7 @@ Dos posiciones, un mismo esquema de fila:
    add-ons, listas de targets, capas — opciones no excluyentes entre sí);
    selección única sólo para modos excluyentes.
 7. **Una sola llamada:** todas las preguntas aplicables se fusionan en UNA
-   `AskUserQuestion` (Q1+Q2+Q3 juntas, estilo [[client-message]]). Un dato
+   `AskUserQuestion` (Q1+Q2+Q3 juntas). Un dato
    faltante posterior se pide en texto plano una única vez (≤3 bullets) —
    nunca un segundo picker.
 8. **Runtimes sin `AskUserQuestion`** (Codex/`.agents`): renderizar

@@ -1092,7 +1092,7 @@ mergeados: N · release-hold: N · ya en base: N · sin cambios: N · wrong-host
 
 | Repo | Rama | PR | CI | Resultado |
 |---|---|---|---|---|
-| projectapp | feat/… | #124 | ✅ verde | ✅ mergeado (squash) |
+| example_project | feat/… | #124 | ✅ verde | ✅ mergeado (squash) |
 | vastago_project_staging | release-may-2026-v2 | #12 | ✅ verde | ⏸️ release — no se mergea |
 | kore_project | — | — | — | ⏭️ wrong-host → vps-projectapp-staging |
 | mimittos_project | — | — | — | ⏭️ sin cambios |

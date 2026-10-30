@@ -88,7 +88,7 @@ scope_override() {
 # Modo default: ✎ = muta de entrada. Todo lo demás deriva a ✓ (check/read-only).
 mode_override() {
   case "$1" in
-    git-commit|git-sync|merge-when-green|pr-green|merge-queue|all-projects|integrate-new-project|deploy-and-check|dev-up|dev-down|tailscale-connect|client-report|migrate-project) echo "✎" ;;
+    git-commit|git-sync|merge-when-green|pr-green|merge-queue|all-projects|integrate-new-project|deploy-and-check|dev-up|dev-down|tailscale-connect|migrate-project) echo "✎" ;;
     *) echo "✓" ;;
   esac
 }
@@ -183,7 +183,7 @@ Con los datos crudos de Phase 1 (y Phase 2 si `--all`), Claude arma la salida:
    - **Servidores & incidentes** (server-diagnostic, incident, migrate-project, integrate-new-project, vps-cleanup)
    - **Entorno & dev local** (dev-up, dev-down, methodology-setup)
    - **Planning & desarrollo** (plan, plan-task, implement, debug, debugme)
-   - **Contenido & reportes** (client-report, user-walkthrough, human, where-are-we, repo-cleanup, skills-audit, skills-help)
+   - **Contenido & reportes** (user-walkthrough, human, where-are-we, repo-cleanup, skills-audit, skills-help)
    - **Buzones** (mailbox-maintenance)
    - **Otras** (cualquiera que no encaje — nunca dejes una skill afuera)
 2. Una **tabla por categoría** con 4 columnas: `| Skill | Ámbito | Args | Alcance |`

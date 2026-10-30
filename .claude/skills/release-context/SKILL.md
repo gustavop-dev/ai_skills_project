@@ -221,5 +221,4 @@ Responde al operador con un resumen breve: release y SHA, diferencias relevantes
 pendientes por fase, fuentes faltantes y enlace al expediente local. Indica si es
 completo o parcial y qué se revalidó. No exijas leer la caché para entender el
 resumen. El objetivo termina con contexto preparado; nuevas acciones dependen de
-la tarea del usuario. Para responder al cliente se puede usar después $client-response;
-para el avance de una tarea en curso, $where-are-we.
+la tarea del usuario. Para el avance de una tarea en curso, $where-are-we.

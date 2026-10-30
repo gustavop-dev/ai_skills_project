@@ -185,7 +185,7 @@ ENTREGADO aunque esa columna diga "ahead N": el drenaje no es de la sesión.
 
 | Repo | Rama | Tree | Sin push | PR | CI | En la base (info) | Entregado | Falta |
 |---|---|---|---|---|---|---|---|---|
-| projectapp | fix/x | ✅ | 0 | #186 merged | ✅ | vs main: ya-en-base (no-op) | ✅ SÍ | — |
+| example_project | fix/x | ✅ | 0 | #186 merged | ✅ | vs main: ya-en-base (no-op) | ✅ SÍ | — |
 | mimittos_project | chore/y | ❌ 3 arch. | 1 | — | — | vs main: ahead 2 | ❌ NO | commit→push→PR→CI |
 | kore_project | feat/z | ✅ | 0 | #61 OPEN | ✅ | vs july-release: ahead 3 | ✅ SÍ | — (drena `$merge-queue`) |
 | tuhuella_project_staging | feat/w | ✅ | 0 | #22 OPEN | ❌ | vs release: ahead 1 | ❌ NO | fix loop del CI |
